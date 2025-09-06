@@ -2,7 +2,10 @@ import * as functions from 'firebase-functions';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 const multer = require('multer');
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+function getGenAI() {
+  const config = functions.config();
+  return new GoogleGenerativeAI(config.gemini?.api_key || '');
+}
 
 // Configure multer for handling file uploads
 const upload = multer({
@@ -112,6 +115,7 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
         try {
           const modelName = 'gemini-2.5-flash-image-preview';
           console.log(`🤖 Using model: ${modelName}`);
+          const genAI = getGenAI();
           const imageModel = genAI.getGenerativeModel({ model: modelName });
           
           let contents;

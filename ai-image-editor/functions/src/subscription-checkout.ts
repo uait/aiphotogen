@@ -3,7 +3,8 @@ import { verifyAuthToken } from './firebase-admin';
 import Stripe from 'stripe';
 
 function getStripe() {
-  return new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  const config = functions.config();
+  return new Stripe(config.stripe?.secret_key || '', {
     apiVersion: '2025-08-27.basil'
   });
 }
@@ -31,10 +32,11 @@ export const subscriptionCheckout = async (req: functions.Request, res: function
     }
 
     // Map plan IDs to Stripe price IDs (you'll need to set these up in Stripe)
+    const config = functions.config();
     const planPriceMapping: { [key: string]: string } = {
-      'starter': process.env.STRIPE_STARTER_PRICE_ID || 'price_1234starter',
-      'creator': process.env.STRIPE_CREATOR_PRICE_ID || 'price_1234creator', 
-      'pro': process.env.STRIPE_PRO_PRICE_ID || 'price_1234pro'
+      'starter': config.stripe?.starter_price_id || 'price_1234starter',
+      'creator': config.stripe?.creator_price_id || 'price_1234creator', 
+      'pro': config.stripe?.pro_price_id || 'price_1234pro'
     };
 
     const priceId = planPriceMapping[planId];

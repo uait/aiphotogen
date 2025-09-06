@@ -4,7 +4,8 @@ import { SubscriptionService } from './subscription-service';
 import Stripe from 'stripe';
 
 function getStripe() {
-  return new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  const config = functions.config();
+  return new Stripe(config.stripe?.secret_key || '', {
     apiVersion: '2025-08-27.basil'
   });
 }

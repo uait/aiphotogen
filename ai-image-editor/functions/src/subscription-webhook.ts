@@ -3,12 +3,16 @@ import * as admin from 'firebase-admin';
 import Stripe from 'stripe';
 
 function getStripe() {
-  return new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  const config = functions.config();
+  return new Stripe(config.stripe?.secret_key || '', {
     apiVersion: '2025-08-27.basil'
   });
 }
 
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+function getWebhookSecret() {
+  const config = functions.config();
+  return config.stripe?.webhook_secret || '';
+}
 
 export const subscriptionWebhook = async (req: functions.Request, res: functions.Response) => {
   if (req.method !== 'POST') {
@@ -21,6 +25,7 @@ export const subscriptionWebhook = async (req: functions.Request, res: functions
   try {
     // Verify webhook signature
     const stripe = getStripe();
+    const endpointSecret = getWebhookSecret();
     event = stripe.webhooks.constructEvent(req.body, sig as string, endpointSecret);
   } catch (err: any) {
     console.error('Webhook signature verification failed:', err.message);
