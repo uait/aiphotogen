@@ -7,10 +7,13 @@ function getGenAI() {
   return new GoogleGenerativeAI(config.gemini?.api_key || '');
 }
 
-// Configure multer for handling file uploads
+// Configure multer for Firebase Functions
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { 
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+    files: 2 // Max 2 files
+  },
   fileFilter: (req: any, file: any, cb: any) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
@@ -40,16 +43,22 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
     return;
   }
 
-  // Handle multipart form data
-  const uploadFields = upload.array('image_0', 2);
+  // Handle multipart form data with better error handling
+  const uploadFields = upload.any(); // Accept any field names
   
   uploadFields(req, res, async (err: any) => {
     if (err) {
       console.error('Upload error:', err);
+      console.error('Request headers:', req.headers);
+      console.error('Content-Type:', req.headers['content-type']);
       return res.status(400).json({ error: 'File upload error: ' + err.message });
     }
 
     try {
+      console.log('📝 Request body keys:', Object.keys(req.body || {}));
+      console.log('📁 Files received:', req.files ? (req.files as any[]).length : 0);
+      console.log('📋 Body prompt:', req.body?.prompt);
+      
       const prompt = req.body.prompt as string;
       const files = req.files as Express.Multer.File[] || [];
       
