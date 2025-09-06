@@ -103,9 +103,10 @@ async function processImageGeneration(req: functions.Request, res: functions.Res
     const files = req.files as Express.Multer.File[] || [];
     
     if (!prompt && files.length === 0) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Please provide a prompt or upload images'
       });
+      return;
     }
 
     // Determine which model to use based on context
@@ -113,11 +114,6 @@ async function processImageGeneration(req: functions.Request, res: functions.Res
     
     if (shouldGenerateImage) {
       // Use Gemini for image generation with the latest model
-      const genAI = getGenAI();
-      const model = genAI.getGenerativeModel({ 
-        model: 'gemini-2.0-flash-exp'
-      });
-      
       let finalImageUrl = '';
       let modelUsed = 'gemini-2.0-flash-exp';
       
@@ -155,16 +151,13 @@ async function processImageGeneration(req: functions.Request, res: functions.Res
               });
             }
             
-            contents = [{ role: 'user', parts }];
+            contents = parts;
           } else {
-            contents = [{ 
-              role: 'user', 
-              parts: [{ text: `Generate a high-quality, detailed image: ${description}` }]
-            }];
+            contents = [{ text: `Generate a high-quality, detailed image: ${description}` }];
           }
           
           const imageResult = await imageModel.generateContent({
-            contents: Array.isArray(contents) ? [{ role: 'user', parts: contents }] : contents,
+            contents: [{ role: 'user', parts: contents }],
             generationConfig: {
               maxOutputTokens: 8192,
               temperature: 0.8
@@ -179,17 +172,19 @@ async function processImageGeneration(req: functions.Request, res: functions.Res
             
             // Check for content policy violations
             if (candidate.finishReason === 'RECITATION') {
-              return res.status(400).json({
+              res.status(400).json({
                 error: 'Content policy violation: The request contains content that may violate usage policies.',
                 isImageGeneration: true
               });
+              return;
             }
             
             if (candidate.finishReason === 'SAFETY') {
-              return res.status(400).json({
+              res.status(400).json({
                 error: 'Safety filter triggered: The content was flagged by safety filters.',
                 isImageGeneration: true  
               });
+              return;
             }
             
             const parts = candidate.content?.parts;
@@ -224,7 +219,7 @@ async function processImageGeneration(req: functions.Request, res: functions.Res
           finalImageUrl = `https://image.pollinations.ai/prompt/${imagePrompt}?seed=${seed}&width=512&height=512&nologo=true`;
         }
         
-        return res.json({
+        res.json({
           imageUrl: finalImageUrl,
           success: true,
           modelUsed: modelUsed,
@@ -234,6 +229,7 @@ async function processImageGeneration(req: functions.Request, res: functions.Res
             return `data:${file.mimetype};base64,${base64}`;
           }) : undefined
         });
+        return;
         
       } catch (error: any) {
         console.error('Image generation error:', error);
@@ -249,7 +245,7 @@ async function processImageGeneration(req: functions.Request, res: functions.Res
         
         finalImageUrl = `https://image.pollinations.ai/prompt/${imagePrompt}?seed=${seed}&width=512&height=512&nologo=true`;
         
-        return res.json({
+        res.json({
           imageUrl: finalImageUrl,
           success: true,
           modelUsed: 'pollinations-fallback',
@@ -259,6 +255,7 @@ async function processImageGeneration(req: functions.Request, res: functions.Res
             return `data:${file.mimetype};base64,${base64}`;
           }) : undefined
         });
+        return;
       }
       
     } else {
@@ -272,18 +269,20 @@ async function processImageGeneration(req: functions.Request, res: functions.Res
       const response = await result.response;
       const text = response.text();
       
-      return res.json({
+      res.json({
         text: text,
         success: true,
         modelUsed: 'gemini-2.0-flash-exp',
         isImageGeneration: false
       });
+      return;
     }
 
   } catch (error: any) {
     console.error('Error processing request:', error);
-    return res.status(500).json({
+    res.status(500).json({
       error: error.message || 'Failed to process request'
     });
+    return;
   }
 }
