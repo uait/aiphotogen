@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+:root {
+  /* PixtorAI Brand Colors */
+  --pixtor-primary: #00D4FF;      /* Electric Blue */
+  --pixtor-secondary: #7C3AED;    /* Deep Purple */
+  --pixtor-accent: #10F88F;       /* Neon Green */
+  --pixtor-bg-dark: #0A0A0A;      /* Rich Black */
+  --pixtor-bg-card: #161618;      /* Dark Gray */
+  --pixtor-text-light: #FFFFFF;   /* Pure White */
+  --pixtor-text-muted: #9CA3AF;   /* Light Gray */
+  --pixtor-gradient: linear-gradient(135deg, #00D4FF 0%, #7C3AED 50%, #10F88F 100%);
+  --pixtor-gradient-hover: linear-gradient(135deg, #00B8E6 0%, #6D28D9 50%, #0DD981 100%);
+  
+  --background: var(--pixtor-bg-dark);
+  --foreground: var(--pixtor-text-light);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--pixtor-bg-dark);
+  color: var(--pixtor-text-light);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Pixelated loading animation */
+@keyframes pixelate-pulse {
+  0% {
+    transform: scale(0.1);
+    filter: brightness(0.6) contrast(1.5);
+  }
+  50% {
+    transform: scale(0.15);
+    filter: brightness(0.9) contrast(1.2);
+  }
+  100% {
+    transform: scale(0.1);
+    filter: brightness(0.6) contrast(1.5);
+  }
+}
+
+.pixelated-loading {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Morphing animation for image transition */
+@keyframes morph-to-result {
+  0% {
+    transform: scale(0.1);
+    filter: brightness(0.6) contrast(1.5);
+    image-rendering: pixelated;
+  }
+  50% {
+    transform: scale(0.8);
+    filter: brightness(1.1) contrast(1.1);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1) contrast(1);
+    image-rendering: auto;
+  }
+}
+
+.morph-to-result {
+  animation: morph-to-result 1s ease-out forwards;
+}
+
+/* PixtorAI Brand Utilities */
+.pixtor-gradient {
+  background: var(--pixtor-gradient);
+}
+
+.pixtor-gradient-hover:hover {
+  background: var(--pixtor-gradient-hover);
+}
+
+.pixtor-glow {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.pixtor-glow-accent {
+  box-shadow: 0 0 20px rgba(16, 248, 143, 0.3);
+}
+
+.pixtor-border {
+  border: 1px solid var(--pixtor-primary);
+}
+
+.pixtor-text-gradient {
+  background: var(--pixtor-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Custom scrollbar styles with PixtorAI branding */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: var(--pixtor-bg-card);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--pixtor-primary);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--pixtor-secondary);
+}
