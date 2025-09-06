@@ -208,10 +208,13 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
         body: formData,
       });
 
-      // Check if we got HTML instead of JSON (API route not available)
+      // Check if we got HTML instead of JSON (API route not working)
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('API routes not available in static deployment. Please use a server-side deployment for full functionality.');
+        console.warn('Got non-JSON response from API, response:', response.status, response.statusText);
+        const responseText = await response.text();
+        console.warn('Response body:', responseText.substring(0, 500));
+        throw new Error(`API endpoint returned ${response.status}: ${response.statusText}. Check Firebase Functions deployment.`);
       }
 
       const result = await response.json();

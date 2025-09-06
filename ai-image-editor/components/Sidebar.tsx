@@ -97,8 +97,8 @@ export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProp
           const data = await response.json();
           setUsage(data.today);
         } else {
-          // API route not available in static deployment
-          console.log('API routes not available in static deployment');
+          // API endpoint returned non-JSON response
+          console.log('API endpoint returned non-JSON response, using fallback data');
           setUsage({ used: 0, limit: 50, remaining: 50 }); // Default free tier values
         }
       } else {
