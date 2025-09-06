@@ -21,7 +21,7 @@ export const api = functions.https.onRequest((request, response): void => {
     const path = request.path;
     const method = request.method;
     
-    console.log(`🔥 Function called: ${method} ${path}`);
+    console.log(`🔥 NEW VERSION - Function called: ${method} ${path}`);
     console.log('Query params:', request.query);
     console.log('Headers:', Object.keys(request.headers));
     
