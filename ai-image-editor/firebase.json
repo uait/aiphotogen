@@ -6,11 +6,8 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "cleanUrls": true,
     "rewrites": [
-      {
-        "source": "/api/**",
-        "function": "nextjs"
-      },
       {
         "source": "**",
         "destination": "/index.html"
@@ -36,11 +33,5 @@
         ]
       }
     ]
-  },
-  "functions": [
-    {
-      "source": ".next/server",
-      "codebase": "nextjs"
-    }
-  ]
+  }
 }
