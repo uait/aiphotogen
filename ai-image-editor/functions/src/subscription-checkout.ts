@@ -2,9 +2,11 @@ import * as functions from 'firebase-functions';
 import { verifyAuthToken } from './firebase-admin';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-08-27.basil'
-});
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+    apiVersion: '2025-08-27.basil'
+  });
+}
 
 export const subscriptionCheckout = async (req: functions.Request, res: functions.Response) => {
   if (req.method !== 'POST') {
@@ -41,6 +43,7 @@ export const subscriptionCheckout = async (req: functions.Request, res: function
     }
 
     // Create Stripe Checkout Session
+    const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [

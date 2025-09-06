@@ -2,9 +2,11 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-08-27.basil'
-});
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+    apiVersion: '2025-08-27.basil'
+  });
+}
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 
@@ -18,6 +20,7 @@ export const subscriptionWebhook = async (req: functions.Request, res: functions
 
   try {
     // Verify webhook signature
+    const stripe = getStripe();
     event = stripe.webhooks.constructEvent(req.body, sig as string, endpointSecret);
   } catch (err: any) {
     console.error('Webhook signature verification failed:', err.message);

@@ -3,9 +3,11 @@ import { verifyAuthToken } from './firebase-admin';
 import { SubscriptionService } from './subscription-service';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-08-27.basil'
-});
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+    apiVersion: '2025-08-27.basil'
+  });
+}
 
 export const subscriptionPortal = async (req: functions.Request, res: functions.Response) => {
   if (req.method !== 'POST') {
@@ -40,6 +42,7 @@ export const subscriptionPortal = async (req: functions.Request, res: functions.
     }
 
     // Create Stripe billing portal session
+    const stripe = getStripe();
     const session = await stripe.billingPortal.sessions.create({
       customer: subscription.stripeCustomerId,
       return_url: returnUrl,
