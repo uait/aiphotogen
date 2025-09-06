@@ -64,6 +64,7 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
       
       if (shouldGenerateImage) {
         // Use Gemini for image generation with the latest model
+        const genAI = getGenAI();
         const model = genAI.getGenerativeModel({ 
           model: 'gemini-2.0-flash-exp'
         });
@@ -231,6 +232,7 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
         
       } else {
         // Use regular chat model for text-only conversations
+        const genAI = getGenAI();
         const model = genAI.getGenerativeModel({ 
           model: 'gemini-2.0-flash-exp'
         });
