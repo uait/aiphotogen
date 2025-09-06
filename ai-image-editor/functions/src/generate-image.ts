@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-const multer = require('multer');
+// const multer = require('multer'); // Currently unused
 
 function getGenAI() {
   const config = functions.config();
