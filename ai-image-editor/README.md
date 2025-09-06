@@ -2,7 +2,7 @@
 
 This is a [Next.js](https://nextjs.org) AI-powered photo generator and editor with Firebase integration and Stripe subscriptions.
 
-🚀 Now deploying to Firebase Hosting!
+🚀 Now deploying to Firebase Hosting with Functions!
 
 ## Getting Started
 
