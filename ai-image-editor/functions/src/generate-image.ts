@@ -23,32 +23,7 @@ function getGenAI() {
 //   }
 // });
 
-// More specific keywords for image generation
-const IMAGE_GENERATION_KEYWORDS = [
-  'generate image', 'generate a', 'create image', 'create a picture', 'draw me', 
-  'make image', 'make a picture', 'design image', 'produce image',
-  'show me image', 'show me a picture', 'visualize', 'illustrate this',
-  'paint me', 'sketch', 'render', 'generate art', 'create art'
-];
-
-// Phrases that should NOT trigger image generation (text responses)
-const TEXT_ONLY_KEYWORDS = [
-  'what is', 'how to', 'explain', 'tell me about', 'define', 
-  'help me understand', 'can you help', 'question about'
-];
-
-function isImageGenerationRequest(prompt: string, hasImages: boolean): boolean {
-  if (hasImages) return true;
-  
-  const lowerPrompt = prompt.toLowerCase();
-  
-  // Check for explicit text-only requests first
-  const isTextRequest = TEXT_ONLY_KEYWORDS.some(keyword => lowerPrompt.includes(keyword));
-  if (isTextRequest) return false;
-  
-  // Check for image generation keywords (must be more specific)
-  return IMAGE_GENERATION_KEYWORDS.some(keyword => lowerPrompt.includes(keyword));
-}
+// Removed keyword-based detection - now using explicit mode parameter from frontend
 
 export const generateImage = async (req: functions.Request, res: functions.Response): Promise<void> => {
   if (req.method !== 'POST') {
