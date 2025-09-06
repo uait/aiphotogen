@@ -90,6 +90,10 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
 
     // Determine which model to use based on explicit mode from frontend
     const shouldGenerateImage = mode === 'photo' || files.length > 0;
+    console.log('🔍 DEBUG - Mode value:', `"${mode}"`);
+    console.log('🔍 DEBUG - Mode type:', typeof mode);
+    console.log('🔍 DEBUG - Mode === "photo":', mode === 'photo');
+    console.log('🔍 DEBUG - Mode === "chat":', mode === 'chat');
     console.log('🤖 Should generate image:', shouldGenerateImage, 'Mode:', mode, 'Has files:', files.length > 0);
     
     if (shouldGenerateImage) {
@@ -243,6 +247,9 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
       
     } else {
       // Use regular chat model for text-only conversations
+      console.log('📝 ENTERING TEXT CHAT MODE - using gemini-2.0-flash-exp');
+      console.log('📝 Text chat prompt:', prompt);
+      
       const genAI = getGenAI();
       const model = genAI.getGenerativeModel({ 
         model: 'gemini-2.0-flash-exp'
@@ -251,6 +258,8 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
+      
+      console.log('📝 Text chat response:', text.substring(0, 100) + '...');
       
       res.json({
         text: text,
