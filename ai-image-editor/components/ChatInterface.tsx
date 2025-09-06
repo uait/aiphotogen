@@ -199,6 +199,7 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
       // Call API
       const formData = new FormData();
       if (userMessage) formData.append('prompt', userMessage);
+      formData.append('mode', activeTab); // Add the current mode (chat/photo)
       images.forEach((image, index) => {
         formData.append(`image_${index}`, image);
       });

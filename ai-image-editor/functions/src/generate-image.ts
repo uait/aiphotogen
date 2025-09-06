@@ -98,9 +98,11 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
     console.log('📝 Request body keys:', Object.keys(req.body || {}));
     console.log('📁 Files received:', req.files ? req.files.length : 0);
     console.log('📋 Body prompt:', req.body?.prompt);
+    console.log('🎯 Mode:', req.body?.mode);
     
     const prompt = req.body?.prompt as string || 'Generate a beautiful AI artwork';
     const files = req.files || [];
+    const mode = req.body?.mode as string || 'photo'; // Default to photo mode for backward compatibility
     
     if (!prompt && files.length === 0) {
       res.status(400).json({
@@ -109,8 +111,9 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
       return;
     }
 
-    // Determine which model to use based on context
-    const shouldGenerateImage = isImageGenerationRequest(prompt || '', files.length > 0);
+    // Determine which model to use based on explicit mode from frontend
+    const shouldGenerateImage = mode === 'photo' || files.length > 0;
+    console.log('🤖 Should generate image:', shouldGenerateImage, 'Mode:', mode, 'Has files:', files.length > 0);
     
     if (shouldGenerateImage) {
       // Use Gemini for image generation with the latest model
