@@ -7,21 +7,21 @@ function getGenAI() {
   return new GoogleGenerativeAI(config.gemini?.api_key || '');
 }
 
-// Configure multer for Firebase Functions
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { 
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-    files: 2 // Max 2 files
-  },
-  fileFilter: (req: any, file: any, cb: any) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'));
-    }
-  }
-});
+// Multer configuration (currently unused but kept for future file upload support)
+// const upload = multer({
+//   storage: multer.memoryStorage(),
+//   limits: { 
+//     fileSize: 10 * 1024 * 1024, // 10MB limit
+//     files: 2 // Max 2 files
+//   },
+//   fileFilter: (req: any, file: any, cb: any) => {
+//     if (file.mimetype.startsWith('image/')) {
+//       cb(null, true);
+//     } else {
+//       cb(new Error('Only image files are allowed'));
+//     }
+//   }
+// });
 
 // Keywords that indicate image generation request
 const IMAGE_GENERATION_KEYWORDS = [
@@ -210,7 +210,7 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
           success: true,
           modelUsed: modelUsed,
           isImageGeneration: true,
-          originalImages: files.length > 0 ? files.map(file => {
+          originalImages: files.length > 0 ? files.map((file: any) => {
             const base64 = file.buffer.toString('base64');
             return `data:${file.mimetype};base64,${base64}`;
           }) : undefined
@@ -236,7 +236,7 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
           success: true,
           modelUsed: 'pollinations-fallback',
           isImageGeneration: true,
-          originalImages: files.length > 0 ? files.map(file => {
+          originalImages: files.length > 0 ? files.map((file: any) => {
             const base64 = file.buffer.toString('base64');
             return `data:${file.mimetype};base64,${base64}`;
           }) : undefined
