@@ -1,4 +1,6 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Photo Generator
+
+This is a [Next.js](https://nextjs.org) AI-powered photo generator and editor with Firebase integration and Stripe subscriptions.
 
 ## Getting Started
 
