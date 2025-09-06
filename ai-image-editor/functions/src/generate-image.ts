@@ -5,7 +5,7 @@ import * as multer from 'multer';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 // Configure multer for handling file uploads
-const upload = multer({
+const upload = (multer as any)({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (req: any, file: any, cb: any) => {
@@ -33,7 +33,8 @@ function isImageGenerationRequest(prompt: string, hasImages: boolean): boolean {
 
 export const generateImage = async (req: functions.Request, res: functions.Response): Promise<void> => {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
   // Handle multipart form data

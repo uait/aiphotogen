@@ -4,7 +4,7 @@ import { SubscriptionService } from './subscription-service';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-01-27.acacia'
+  apiVersion: '2025-08-27.basil'
 });
 
 export const subscriptionPortal = async (req: functions.Request, res: functions.Response) => {
