@@ -48,10 +48,11 @@ jobs:
         echo "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}" >> .env.local
         echo "STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}" >> .env.local
     
-    - name: Temporarily move API routes
+    - name: Temporarily remove API routes for static build
       run: |
         if [ -d "app/api" ]; then
-          mv app/api app/api_backup
+          tar -czf api_backup.tar.gz app/api
+          rm -rf app/api
         fi
     
     - name: Build Next.js app
@@ -59,8 +60,9 @@ jobs:
     
     - name: Restore API routes
       run: |
-        if [ -d "app/api_backup" ]; then
-          mv app/api_backup app/api
+        if [ -f "api_backup.tar.gz" ]; then
+          tar -xzf api_backup.tar.gz
+          rm api_backup.tar.gz
         fi
     
     - name: Deploy to Firebase Hosting
