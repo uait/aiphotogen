@@ -43,81 +43,89 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
     return;
   }
 
-  // Handle multipart form data with better error handling
-  const uploadFields = upload.any(); // Accept any field names
-  
-  uploadFields(req, res, async (err: any) => {
-    if (err) {
-      console.error('Upload error:', err);
-      console.error('Request headers:', req.headers);
-      console.error('Content-Type:', req.headers['content-type']);
-      return res.status(400).json({ error: 'File upload error: ' + err.message });
+  try {
+    console.log('🔍 Content-Type:', req.headers['content-type']);
+    console.log('🔍 Request method:', req.method);
+    
+    // Check if it's a form data request
+    const contentType = req.headers['content-type'] || '';
+    
+    if (contentType.includes('multipart/form-data')) {
+      console.log('📝 Processing multipart form data');
+      
+      // Use multer to parse form data
+      const uploadFields = upload.any();
+      
+      return new Promise<void>((resolve) => {
+        uploadFields(req, res, async (err: any) => {
+          if (err) {
+            console.error('Upload error:', err);
+            console.error('Error details:', {
+              message: err.message,
+              stack: err.stack,
+              code: err.code
+            });
+            res.status(400).json({ error: 'File upload error: ' + err.message });
+            resolve();
+            return;
+          }
+          
+          try {
+            await processImageGeneration(req, res);
+            resolve();
+          } catch (error) {
+            console.error('Processing error:', error);
+            res.status(500).json({ error: 'Processing failed' });
+            resolve();
+          }
+        });
+      });
+    } else if (contentType.includes('application/json')) {
+      console.log('📝 Processing JSON request');
+      await processImageGeneration(req, res);
+    } else {
+      console.log('❌ Unsupported content type:', contentType);
+      res.status(400).json({ error: 'Unsupported content type. Use multipart/form-data or application/json' });
+    }
+  } catch (error) {
+    console.error('Request handling error:', error);
+    res.status(500).json({ error: 'Request handling failed' });
+  }
+};
+
+async function processImageGeneration(req: functions.Request, res: functions.Response): Promise<void> {
+  try {
+    console.log('📝 Request body keys:', Object.keys(req.body || {}));
+    console.log('📁 Files received:', req.files ? (req.files as any[]).length : 0);
+    console.log('📋 Body prompt:', req.body?.prompt);
+    
+    const prompt = req.body.prompt as string;
+    const files = req.files as Express.Multer.File[] || [];
+    
+    if (!prompt && files.length === 0) {
+      return res.status(400).json({
+        error: 'Please provide a prompt or upload images'
+      });
     }
 
-    try {
-      console.log('📝 Request body keys:', Object.keys(req.body || {}));
-      console.log('📁 Files received:', req.files ? (req.files as any[]).length : 0);
-      console.log('📋 Body prompt:', req.body?.prompt);
+    // Determine which model to use based on context
+    const shouldGenerateImage = isImageGenerationRequest(prompt || '', files.length > 0);
+    
+    if (shouldGenerateImage) {
+      // Use Gemini for image generation with the latest model
+      const genAI = getGenAI();
+      const model = genAI.getGenerativeModel({ 
+        model: 'gemini-2.0-flash-exp'
+      });
       
-      const prompt = req.body.prompt as string;
-      const files = req.files as Express.Multer.File[] || [];
+      let finalImageUrl = '';
+      let modelUsed = 'gemini-2.0-flash-exp';
       
-      if (!prompt && files.length === 0) {
-        return res.status(400).json({
-          error: 'Please provide a prompt or upload images'
-        });
-      }
+      const description = prompt || 'Generate an image';
+      console.log('🎨 Starting image generation with prompt:', description);
 
-      // Determine which model to use based on context
-      const shouldGenerateImage = isImageGenerationRequest(prompt || '', files.length > 0);
-      
-      if (shouldGenerateImage) {
-        // Use Gemini for image generation with the latest model
-        const genAI = getGenAI();
-        const model = genAI.getGenerativeModel({ 
-          model: 'gemini-2.0-flash-exp'
-        });
-        
-        const parts: any[] = [];
-        
-        // Add text prompt for image generation
-        if (prompt) {
-          if (files.length > 0) {
-            parts.push({ 
-              text: `Please analyze this image and ${prompt}. Describe in detail what changes you would make to create the desired result. Be specific about colors, objects, positioning, and style.`
-            });
-          } else {
-            parts.push({ 
-              text: `Create a detailed description for generating an image: ${prompt}. Include specific details about composition, colors, lighting, style, and any objects or people that should be present.`
-            });
-          }
-        }
-        
-        // Add images if provided
-        if (files.length > 0) {
-          for (const file of files) {
-            const base64 = file.buffer.toString('base64');
-            parts.push({
-              inlineData: {
-                mimeType: file.mimetype,
-                data: base64
-              }
-            });
-          }
-        }
-        
-        // Generate content description with Gemini
-        const result = await model.generateContent({
-          contents: [{ role: 'user', parts }],
-          generationConfig: {
-            maxOutputTokens: 8192,
-            temperature: 0.8,
-          }
-        });
-        
-        const response = await result.response;
-        const description = response.text();
-        
+      // Try image generation first
+      try {
         // Use Gemini 2.5 Flash Image for actual image generation
         let finalImageUrl = '';
         let modelUsed = 'gemini-2.5-flash-image-preview';
@@ -138,19 +146,20 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
             });
             
             for (const file of files) {
-              const base64 = file.buffer.toString('base64');
+              const base64Data = file.buffer.toString('base64');
               parts.push({
                 inlineData: {
                   mimeType: file.mimetype,
-                  data: base64
+                  data: base64Data
                 }
               });
             }
             
-            contents = parts;
+            contents = [{ role: 'user', parts }];
           } else {
-            contents = [{
-              text: `Create a detailed image: ${description}. Make it high-quality, artistic, and visually appealing.`
+            contents = [{ 
+              role: 'user', 
+              parts: [{ text: `Generate a high-quality, detailed image: ${description}` }]
             }];
           }
           
@@ -171,21 +180,18 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
             // Check for content policy violations
             if (candidate.finishReason === 'RECITATION') {
               return res.status(400).json({
-                error: 'This content couldn\'t be processed due to our content guidelines. Please try a different prompt or image.',
-                errorType: 'CONTENT_VIOLATION',
-                success: false
+                error: 'Content policy violation: The request contains content that may violate usage policies.',
+                isImageGeneration: true
               });
             }
             
             if (candidate.finishReason === 'SAFETY') {
               return res.status(400).json({
-                error: 'This request was blocked for safety reasons. Please ensure your content follows our guidelines.',
-                errorType: 'SAFETY_VIOLATION',
-                success: false
+                error: 'Safety filter triggered: The content was flagged by safety filters.',
+                isImageGeneration: true  
               });
             }
             
-            // Look for image data in the response
             const parts = candidate.content?.parts;
             if (parts) {
               for (const part of parts) {
@@ -197,26 +203,16 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
                   console.log('✅ Found generated image in response');
                   break;
                 }
-                // Also check inlineData format
-                if (part.inlineData && part.inlineData.mimeType?.startsWith('image/')) {
-                  const base64Image = part.inlineData.data;
-                  const mimeType = part.inlineData.mimeType;
-                  finalImageUrl = `data:${mimeType};base64,${base64Image}`;
-                  console.log('✅ Found generated image in response');
-                  break;
-                }
               }
             }
           }
-          
-          if (!finalImageUrl) {
-            throw new Error('No image data found in Gemini response');
-          }
-          
-        } catch (geminiError) {
-          console.error('Gemini image generation failed:', geminiError);
-          modelUsed = 'fallback-service';
-          
+        } catch (geminiError: any) {
+          console.log('⚠️ Gemini image generation failed:', geminiError.message);
+        }
+        
+        // If no image was generated, use fallback
+        if (!finalImageUrl) {
+          console.log('🔄 Using fallback image service');
           // Fallback to external service
           const cleanPrompt = (prompt || description || 'AI generated artwork')
             .replace(/[^a-zA-Z0-9\s]/g, '')
@@ -239,30 +235,55 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
           }) : undefined
         });
         
-      } else {
-        // Use regular chat model for text-only conversations
-        const genAI = getGenAI();
-        const model = genAI.getGenerativeModel({ 
-          model: 'gemini-2.0-flash-exp'
-        });
+      } catch (error: any) {
+        console.error('Image generation error:', error);
         
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+        // Fallback to external service on any error
+        console.log('🔄 Using fallback image service due to error');
+        const cleanPrompt = (prompt || 'AI generated artwork')
+          .replace(/[^a-zA-Z0-9\s]/g, '')
+          .substring(0, 100);
+        
+        const imagePrompt = encodeURIComponent(cleanPrompt);
+        const seed = Math.floor(Math.random() * 10000);
+        
+        finalImageUrl = `https://image.pollinations.ai/prompt/${imagePrompt}?seed=${seed}&width=512&height=512&nologo=true`;
         
         return res.json({
-          text: text,
+          imageUrl: finalImageUrl,
           success: true,
-          modelUsed: 'gemini-2.0-flash-exp',
-          isImageGeneration: false
+          modelUsed: 'pollinations-fallback',
+          isImageGeneration: true,
+          originalImages: files.length > 0 ? files.map(file => {
+            const base64 = file.buffer.toString('base64');
+            return `data:${file.mimetype};base64,${base64}`;
+          }) : undefined
         });
       }
-
-    } catch (error: any) {
-      console.error('Error processing request:', error);
-      return res.status(500).json({
-        error: error.message || 'Failed to process request'
+      
+    } else {
+      // Use regular chat model for text-only conversations
+      const genAI = getGenAI();
+      const model = genAI.getGenerativeModel({ 
+        model: 'gemini-2.0-flash-exp'
+      });
+      
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      return res.json({
+        text: text,
+        success: true,
+        modelUsed: 'gemini-2.0-flash-exp',
+        isImageGeneration: false
       });
     }
-  });
-};
+
+  } catch (error: any) {
+    console.error('Error processing request:', error);
+    return res.status(500).json({
+      error: error.message || 'Failed to process request'
+    });
+  }
+}
