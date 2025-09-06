@@ -129,8 +129,8 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
           const genAI = getGenAI();
           console.log('🔑 Checking Gemini API key availability:', !!genAI);
           
-          // Use the standard Gemini model for image generation
-          const modelName = 'gemini-2.0-flash-exp';
+          // Use Gemini 2.5 Flash Image for actual image generation
+          const modelName = 'gemini-2.5-flash-image-preview';
           console.log(`🤖 Using model: ${modelName}`);
           const imageModel = genAI.getGenerativeModel({ model: modelName });
           
