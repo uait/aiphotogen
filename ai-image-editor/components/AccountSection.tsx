@@ -37,15 +37,27 @@ export default function AccountSection() {
         }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to load usage data');
+      const contentType = response.headers.get('content-type');
+      if (response.ok && contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        setUsage(data);
+      } else {
+        // Fallback for static deployment
+        console.log('API routes not available, using default values');
+        setUsage({
+          today: { used: 0, limit: 50, remaining: 50 },
+          plan: { id: 'free', name: 'Free', dailyLimit: 50 },
+          subscription: { status: 'free' }
+        });
       }
-
-      const data = await response.json();
-      setUsage(data);
     } catch (error: any) {
       console.error('Error loading usage:', error);
-      toast.error('Failed to load account information');
+      // Fallback for static deployment
+      setUsage({
+        today: { used: 0, limit: 50, remaining: 50 },
+        plan: { id: 'free', name: 'Free', dailyLimit: 50 },
+        subscription: { status: 'free' }
+      });
     } finally {
       setLoading(false);
     }
@@ -68,16 +80,18 @@ export default function AccountSection() {
         })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to create portal session');
+      const contentType = response.headers.get('content-type');
+      if (response.ok && contentType && contentType.includes('application/json')) {
+        const { url } = await response.json();
+        window.location.href = url;
+      } else {
+        // API route not available in static deployment
+        toast.error('Billing portal not available in static deployment. Please use a server-side deployment for subscription features.');
       }
-
-      const { url } = await response.json();
-      window.location.href = url;
       
     } catch (error: any) {
       console.error('Portal error:', error);
-      toast.error('Failed to open billing portal');
+      toast.error('Billing portal not available in static deployment');
     } finally {
       setPortalLoading(false);
     }

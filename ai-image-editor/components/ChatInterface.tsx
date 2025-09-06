@@ -208,6 +208,12 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
         body: formData,
       });
 
+      // Check if we got HTML instead of JSON (API route not available)
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('API routes not available in static deployment. Please use a server-side deployment for full functionality.');
+      }
+
       const result = await response.json();
       
       if (!response.ok) {

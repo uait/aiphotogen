@@ -51,15 +51,15 @@ export default function PricingSection({ currentPlanId = 'free', className = '' 
         })
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create checkout session');
+      const contentType = response.headers.get('content-type');
+      if (response.ok && contentType && contentType.includes('application/json')) {
+        const { url } = await response.json();
+        // Redirect to Stripe Checkout
+        window.location.href = url;
+      } else {
+        // API route not available in static deployment
+        throw new Error('Subscription checkout not available in static deployment. Please use a server-side deployment for full functionality.');
       }
-
-      const { url } = await response.json();
-      
-      // Redirect to Stripe Checkout
-      window.location.href = url;
       
     } catch (error: any) {
       console.error('Checkout error:', error);

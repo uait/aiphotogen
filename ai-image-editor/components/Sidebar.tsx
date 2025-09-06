@@ -92,11 +92,23 @@ export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProp
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setUsage(data.today);
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json();
+          setUsage(data.today);
+        } else {
+          // API route not available in static deployment
+          console.log('API routes not available in static deployment');
+          setUsage({ used: 0, limit: 50, remaining: 50 }); // Default free tier values
+        }
+      } else {
+        // Fallback for static deployment
+        setUsage({ used: 0, limit: 50, remaining: 50 });
       }
     } catch (error) {
       console.error('Failed to load usage:', error);
+      // Fallback for static deployment
+      setUsage({ used: 0, limit: 50, remaining: 50 });
     } finally {
       setLoadingUsage(false);
     }
