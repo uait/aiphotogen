@@ -23,17 +23,30 @@ function getGenAI() {
 //   }
 // });
 
-// Keywords that indicate image generation request
+// More specific keywords for image generation
 const IMAGE_GENERATION_KEYWORDS = [
-  'generate', 'create', 'make', 'draw', 'design', 'produce',
-  'image', 'picture', 'photo', 'illustration', 'artwork',
-  'edit', 'modify', 'enhance', 'transform', 'change', 'add', 'remove'
+  'generate image', 'generate a', 'create image', 'create a picture', 'draw me', 
+  'make image', 'make a picture', 'design image', 'produce image',
+  'show me image', 'show me a picture', 'visualize', 'illustrate this',
+  'paint me', 'sketch', 'render', 'generate art', 'create art'
+];
+
+// Phrases that should NOT trigger image generation (text responses)
+const TEXT_ONLY_KEYWORDS = [
+  'what is', 'how to', 'explain', 'tell me about', 'define', 
+  'help me understand', 'can you help', 'question about'
 ];
 
 function isImageGenerationRequest(prompt: string, hasImages: boolean): boolean {
   if (hasImages) return true;
   
   const lowerPrompt = prompt.toLowerCase();
+  
+  // Check for explicit text-only requests first
+  const isTextRequest = TEXT_ONLY_KEYWORDS.some(keyword => lowerPrompt.includes(keyword));
+  if (isTextRequest) return false;
+  
+  // Check for image generation keywords (must be more specific)
   return IMAGE_GENERATION_KEYWORDS.some(keyword => lowerPrompt.includes(keyword));
 }
 
@@ -113,9 +126,12 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
         let modelUsed = 'gemini-2.5-flash-image-preview';
         
         try {
-          const modelName = 'gemini-2.5-flash-image-preview';
-          console.log(`🤖 Using model: ${modelName}`);
           const genAI = getGenAI();
+          console.log('🔑 Checking Gemini API key availability:', !!genAI);
+          
+          // Use the standard Gemini model for image generation
+          const modelName = 'gemini-2.0-flash-exp';
+          console.log(`🤖 Using model: ${modelName}`);
           const imageModel = genAI.getGenerativeModel({ model: modelName });
           
           let contents;
@@ -189,6 +205,7 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
           }
         } catch (geminiError: any) {
           console.log('⚠️ Gemini image generation failed:', geminiError.message);
+          console.log('Full error:', geminiError);
         }
         
         // If no image was generated, use fallback
