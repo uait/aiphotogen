@@ -1,12 +1,12 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import * as cors from 'cors';
+const cors = require('cors');
 
 // Initialize Firebase Admin
 admin.initializeApp();
 
 // Configure CORS
-const corsHandler = (cors as any)({ origin: true });
+const corsHandler = cors({ origin: true });
 
 // Import function modules
 import { generateImage } from './generate-image';
