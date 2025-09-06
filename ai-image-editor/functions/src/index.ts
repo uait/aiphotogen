@@ -6,7 +6,7 @@ import * as cors from 'cors';
 admin.initializeApp();
 
 // Configure CORS
-const corsHandler = cors({ origin: true });
+const corsHandler = (cors as any)({ origin: true });
 
 // Import function modules
 import { generateImage } from './generate-image';
@@ -16,7 +16,7 @@ import { subscriptionUsage } from './subscription-usage';
 import { subscriptionWebhook } from './subscription-webhook';
 
 // Export HTTP functions
-export const api = functions.https.onRequest((request, response) => {
+export const api = functions.https.onRequest((request, response): void => {
   return corsHandler(request, response, async () => {
     const path = request.path;
     

@@ -4,7 +4,7 @@ import { SubscriptionService } from './subscription-service';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-11-20.acacia'
+  apiVersion: '2025-01-27.acacia'
 });
 
 export const subscriptionPortal = async (req: functions.Request, res: functions.Response) => {
@@ -15,7 +15,7 @@ export const subscriptionPortal = async (req: functions.Request, res: functions.
   try {
     // Verify authentication
     const authHeader = req.headers.authorization;
-    const userId = await verifyAuthToken(authHeader);
+    const userId = await verifyAuthToken(authHeader || null);
     
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });

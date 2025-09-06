@@ -11,7 +11,7 @@ export const subscriptionUsage = async (req: functions.Request, res: functions.R
   try {
     // Verify authentication
     const authHeader = req.headers.authorization;
-    const userId = await verifyAuthToken(authHeader);
+    const userId = await verifyAuthToken(authHeader || null);
     
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });

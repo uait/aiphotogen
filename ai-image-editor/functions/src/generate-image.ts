@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: any, file: any, cb: any) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
@@ -31,7 +31,7 @@ function isImageGenerationRequest(prompt: string, hasImages: boolean): boolean {
   return IMAGE_GENERATION_KEYWORDS.some(keyword => lowerPrompt.includes(keyword));
 }
 
-export const generateImage = async (req: functions.Request, res: functions.Response) => {
+export const generateImage = async (req: functions.Request, res: functions.Response): Promise<void> => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -39,7 +39,7 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
   // Handle multipart form data
   const uploadFields = upload.array('image_0', 2);
   
-  uploadFields(req, res, async (err) => {
+  uploadFields(req, res, async (err: any) => {
     if (err) {
       console.error('Upload error:', err);
       return res.status(400).json({ error: 'File upload error: ' + err.message });
@@ -143,8 +143,7 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
             contents: Array.isArray(contents) ? [{ role: 'user', parts: contents }] : contents,
             generationConfig: {
               maxOutputTokens: 8192,
-              temperature: 0.8,
-              responseModalities: ['TEXT', 'IMAGE'],
+              temperature: 0.8
             }
           });
           
@@ -176,9 +175,9 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
             if (parts) {
               for (const part of parts) {
                 // Check for inline_data with image
-                if (part.inline_data && part.inline_data.mime_type?.startsWith('image/')) {
-                  const base64Image = part.inline_data.data;
-                  const mimeType = part.inline_data.mime_type;
+                if ((part as any).inlineData && (part as any).inlineData.mimeType?.startsWith('image/')) {
+                  const base64Image = (part as any).inlineData.data;
+                  const mimeType = (part as any).inlineData.mimeType;
                   finalImageUrl = `data:${mimeType};base64,${base64Image}`;
                   console.log('✅ Found generated image in response');
                   break;

@@ -3,7 +3,7 @@ import * as admin from 'firebase-admin';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-11-20.acacia'
+  apiVersion: '2025-01-27.acacia'
 });
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -103,10 +103,10 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   await subscriptionRef.update({
     status: subscription.status,
     currentPeriodStart: admin.firestore.Timestamp.fromDate(
-      new Date(subscription.current_period_start * 1000)
+      new Date((subscription as any).current_period_start * 1000)
     ),
     currentPeriodEnd: admin.firestore.Timestamp.fromDate(
-      new Date(subscription.current_period_end * 1000)
+      new Date((subscription as any).current_period_end * 1000)
     ),
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
     updatedAt: admin.firestore.Timestamp.now()
