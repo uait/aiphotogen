@@ -1,0 +1,59 @@
+import * as functions from 'firebase-functions';
+import { verifyAuthToken } from './firebase-admin';
+import { SubscriptionService } from './subscription-service';
+import { GetUsageResponse } from './subscription-types';
+
+export const subscriptionUsage = async (req: functions.Request, res: functions.Response) => {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    // Verify authentication
+    const authHeader = req.headers.authorization;
+    const userId = await verifyAuthToken(authHeader);
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const subscriptionService = SubscriptionService.getInstance();
+    
+    // Get current plan and subscription
+    const [plan, subscription, todayUsage] = await Promise.all([
+      subscriptionService.getUserPlan(userId),
+      subscriptionService.getUserSubscription(userId),
+      subscriptionService.getTodayUsage(userId)
+    ]);
+
+    // Get monthly usage stats
+    const last30DaysUsage = await subscriptionService.getUsageStats(userId, 30);
+    const monthlyUsageTotal = last30DaysUsage.reduce((sum, day) => sum + day.operations, 0);
+    
+    // Calculate projected monthly usage
+    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+    const dayOfMonth = new Date().getDate();
+    const projectedMonthly = Math.round((monthlyUsageTotal / dayOfMonth) * daysInMonth);
+
+    const response: GetUsageResponse = {
+      today: {
+        used: todayUsage.usedOperations,
+        limit: plan.dailyLimit,
+        remaining: Math.max(0, plan.dailyLimit - todayUsage.usedOperations)
+      },
+      thisMonth: {
+        used: monthlyUsageTotal,
+        projectedMonthly
+      },
+      plan,
+      subscription: subscription!
+    };
+
+    return res.json(response);
+  } catch (error: any) {
+    console.error('Usage retrieval error:', error);
+    return res.status(500).json({
+      error: error.message || 'Failed to retrieve usage information'
+    });
+  }
+};
