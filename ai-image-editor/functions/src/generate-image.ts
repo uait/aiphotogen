@@ -115,7 +115,6 @@ async function processImageGeneration(req: functions.Request, res: functions.Res
     if (shouldGenerateImage) {
       // Use Gemini for image generation with the latest model
       let finalImageUrl = '';
-      let modelUsed = 'gemini-2.0-flash-exp';
       
       const description = prompt || 'Generate an image';
       console.log('🎨 Starting image generation with prompt:', description);
