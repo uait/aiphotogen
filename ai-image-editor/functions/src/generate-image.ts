@@ -42,14 +42,16 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
     const contentType = req.headers['content-type'] || '';
     
     if (contentType.includes('multipart/form-data')) {
-      console.log('⚠️ Multipart form data detected - currently not supported');
-      console.log('📝 Attempting to extract prompt from raw body or fallback');
+      console.log('⚠️ Multipart form data detected - extracting prompt and mode');
+      console.log('📝 Raw body keys:', Object.keys(req.body || {}));
       
-      // Try to extract just the prompt for now
+      // Extract both prompt and mode from form data
       const prompt = req.body?.prompt || 'Generate a beautiful AI artwork';
+      const mode = req.body?.mode || 'chat'; // Default to chat for safety
       console.log('🎨 Using prompt:', prompt);
+      console.log('🎯 Using mode:', mode);
       
-      await processImageGeneration({ body: { prompt }, files: [] } as any, res);
+      await processImageGeneration({ body: { prompt, mode }, files: [] } as any, res);
       
     } else if (contentType.includes('application/json')) {
       console.log('📝 Processing JSON request');
@@ -77,7 +79,7 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
     
     const prompt = req.body?.prompt as string || 'Generate a beautiful AI artwork';
     const files = req.files || [];
-    const mode = req.body?.mode as string || 'photo'; // Default to photo mode for backward compatibility
+    const mode = req.body?.mode as string || 'chat'; // Default to chat mode for safety
     
     if (!prompt && files.length === 0) {
       res.status(400).json({
