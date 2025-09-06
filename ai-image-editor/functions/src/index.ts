@@ -27,20 +27,20 @@ export const api = functions.https.onRequest((request, response): void => {
     
     try {
       // Route requests to appropriate handlers
-      // Firebase hosting strips /api prefix, so we get paths like /generate-image
-      if (path === '/generate-image' || path.startsWith('/generate-image')) {
+      // Handle both /api/route and /route paths
+      if (path === '/generate-image' || path === '/api/generate-image' || path.startsWith('/generate-image') || path.startsWith('/api/generate-image')) {
         console.log('🎯 Routing to generateImage');
         return await generateImage(request, response);
-      } else if (path === '/subscription/checkout' || path.startsWith('/subscription/checkout')) {
+      } else if (path === '/subscription/checkout' || path === '/api/subscription/checkout' || path.startsWith('/subscription/checkout') || path.startsWith('/api/subscription/checkout')) {
         console.log('🎯 Routing to subscriptionCheckout');
         return await subscriptionCheckout(request, response);
-      } else if (path === '/subscription/portal' || path.startsWith('/subscription/portal')) {
+      } else if (path === '/subscription/portal' || path === '/api/subscription/portal' || path.startsWith('/subscription/portal') || path.startsWith('/api/subscription/portal')) {
         console.log('🎯 Routing to subscriptionPortal');
         return await subscriptionPortal(request, response);
-      } else if (path === '/subscription/usage' || path.startsWith('/subscription/usage')) {
+      } else if (path === '/subscription/usage' || path === '/api/subscription/usage' || path.startsWith('/subscription/usage') || path.startsWith('/api/subscription/usage')) {
         console.log('🎯 Routing to subscriptionUsage');
         return await subscriptionUsage(request, response);
-      } else if (path === '/subscription/webhook' || path.startsWith('/subscription/webhook')) {
+      } else if (path === '/subscription/webhook' || path === '/api/subscription/webhook' || path.startsWith('/subscription/webhook') || path.startsWith('/api/subscription/webhook')) {
         console.log('🎯 Routing to subscriptionWebhook');
         return await subscriptionWebhook(request, response);
       } else {
@@ -49,7 +49,7 @@ export const api = functions.https.onRequest((request, response): void => {
           error: 'Function not found',
           path: path,
           method: method,
-          availableRoutes: ['/generate-image', '/subscription/checkout', '/subscription/portal', '/subscription/usage', '/subscription/webhook']
+          availableRoutes: ['/api/generate-image', '/api/subscription/checkout', '/api/subscription/portal', '/api/subscription/usage', '/api/subscription/webhook']
         });
       }
     } catch (error) {
