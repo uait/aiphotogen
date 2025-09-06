@@ -85,4 +85,4 @@ jobs:
     
     - name: Deploy to Firebase
       run: |
-        firebase deploy --token '${{ secrets.FIREBASE_TOKEN }}' --project '${{ secrets.FIREBASE_PROJECT_ID }}'
+        firebase deploy --force --token '${{ secrets.FIREBASE_TOKEN }}' --project '${{ secrets.FIREBASE_PROJECT_ID }}'
