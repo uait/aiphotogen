@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-const Busboy = require('busboy');
+const busboy = require('busboy');
 
 function getGenAI() {
   const config = functions.config();
@@ -55,14 +55,14 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
           const files: any[] = [];
           
           const contentType = req.headers['content-type'];
-          const busboy = new Busboy({ headers: { 'content-type': contentType } });
+          const busboyInstance = busboy({ headers: { 'content-type': contentType } });
           
-          busboy.on('field', (fieldname: string, val: string) => {
+          busboyInstance.on('field', (fieldname: string, val: string) => {
             console.log('📝 Busboy field:', fieldname, '=', val);
             fields[fieldname] = val;
           });
           
-          busboy.on('file', (fieldname: string, file: any, filename: string, encoding: string, mimetype: string) => {
+          busboyInstance.on('file', (fieldname: string, file: any, filename: string, encoding: string, mimetype: string) => {
             console.log('📁 Busboy file:', fieldname, filename, mimetype);
             const buffers: any[] = [];
             file.on('data', (data: any) => buffers.push(data));
@@ -77,20 +77,20 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
           });
           
           await new Promise<void>((resolve, reject) => {
-            busboy.on('finish', () => {
+            busboyInstance.on('finish', () => {
               console.log('📝 Busboy finished - fields:', fields);
               console.log('📁 Busboy finished - files:', files.length);
               resolve();
             });
             
-            busboy.on('error', (err: any) => {
+            busboyInstance.on('error', (err: any) => {
               console.error('Busboy error:', err);
               reject(err);
             });
             
             // Write the raw buffer to busboy
-            busboy.write(req.body);
-            busboy.end();
+            busboyInstance.write(req.body);
+            busboyInstance.end();
           });
           
           prompt = fields.prompt || 'Generate a beautiful AI artwork';
