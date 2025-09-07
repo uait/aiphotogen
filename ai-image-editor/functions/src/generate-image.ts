@@ -1,27 +1,27 @@
 import * as functions from 'firebase-functions';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-// const multer = require('multer'); // Currently unused
+const multer = require('multer');
 
 function getGenAI() {
   const config = functions.config();
   return new GoogleGenerativeAI(config.gemini?.api_key || '');
 }
 
-// Multer configuration (currently unused but kept for future file upload support)
-// const upload = multer({
-//   storage: multer.memoryStorage(),
-//   limits: { 
-//     fileSize: 10 * 1024 * 1024, // 10MB limit
-//     files: 2 // Max 2 files
-//   },
-//   fileFilter: (req: any, file: any, cb: any) => {
-//     if (file.mimetype.startsWith('image/')) {
-//       cb(null, true);
-//     } else {
-//       cb(new Error('Only image files are allowed'));
-//     }
-//   }
-// });
+// Multer configuration for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { 
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+    files: 2 // Max 2 files
+  },
+  fileFilter: (req: any, file: any, cb: any) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+});
 
 // Removed keyword-based detection - now using explicit mode parameter from frontend
 
@@ -42,16 +42,32 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
     const contentType = req.headers['content-type'] || '';
     
     if (contentType.includes('multipart/form-data')) {
-      console.log('⚠️ Multipart form data detected - extracting prompt and mode');
-      console.log('📝 Raw body keys:', Object.keys(req.body || {}));
+      console.log('⚠️ Multipart form data detected - parsing with multer');
       
-      // Extract both prompt and mode from form data
+      // Use multer to parse multipart form data
+      const uploadMiddleware = upload.any();
+      
+      await new Promise<void>((resolve, reject) => {
+        uploadMiddleware(req as any, res as any, (err: any) => {
+          if (err) {
+            console.error('Multer error:', err);
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+      
+      // Extract prompt and mode from parsed form data
       const prompt = req.body?.prompt || 'Generate a beautiful AI artwork';
-      const mode = req.body?.mode || 'chat'; // Default to chat for safety
+      const mode = req.body?.mode || 'chat';
+      const files = (req as any).files || [];
+      
       console.log('🎨 Using prompt:', prompt);
       console.log('🎯 Using mode:', mode);
+      console.log('📁 Files parsed:', files.length);
       
-      await processImageGeneration({ body: { prompt, mode }, files: [] } as any, res);
+      await processImageGeneration({ body: { prompt, mode }, files: files } as any, res);
       
     } else if (contentType.includes('application/json')) {
       console.log('📝 Processing JSON request');
