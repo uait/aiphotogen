@@ -85,8 +85,36 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 # 4. Push branch to origin
 git push -u origin feature/fix-gemini-chat-mode
 
-# 5. Create Pull Request (if not auto-deployed)
-# Include Monday ticket link in PR description
+# 5. Create Pull Request with comprehensive description
+gh pr create --title "Descriptive PR title" --body "
+Detailed PR description including:
+- Summary of changes
+- Technical implementation details  
+- Benefits and impact
+- Test cases covered
+- Monday ticket reference
+"
+
+# 6. MANDATORY: Request Copilot Review
+# After creating PR, request Copilot to review the changes
+@github-copilot review this pull request
+
+# 7. Address Copilot Feedback (if any)
+# Read all Copilot review comments carefully
+# If Copilot identifies legitimate issues:
+#   - Make necessary changes on the feature branch
+#   - Push updates to the PR
+#   - Ask Copilot to re-review if needed
+# If comments are minor suggestions or false positives:
+#   - Document reasoning for not implementing suggestions
+#   - Proceed with merge
+
+# 8. Merge PR when ready
+# Only merge when:
+# ✅ Copilot review completed
+# ✅ All checks passing  
+# ✅ Any legitimate issues addressed
+# ✅ Monday ticket updated
 ```
 
 ### Commit Message Standards:
@@ -168,6 +196,102 @@ firebase deploy --only functions
 - [ ] Merged to master branch (triggers deployment)
 - [ ] Monday ticket updated with deployment status
 - [ ] Monitor deployment logs for errors
+
+## 🤖 Copilot Review Process
+
+### **MANDATORY**: Every PR must be reviewed by Copilot
+
+After creating a Pull Request, you **MUST** request a Copilot review before merging.
+
+### **Step-by-Step Copilot Review Workflow:**
+
+#### 1. **Request Copilot Review**
+```bash
+# After creating PR, go to PR comments and tag Copilot
+@github-copilot review this pull request
+```
+
+#### 2. **Read Copilot Feedback Carefully**
+Copilot will analyze:
+- ✅ Code quality and best practices
+- ✅ Potential bugs or security issues  
+- ✅ Performance considerations
+- ✅ Documentation completeness
+- ✅ Testing coverage gaps
+- ✅ Design pattern consistency
+
+#### 3. **Evaluate Copilot Comments**
+
+**For LEGITIMATE Issues** (address these):
+- 🚨 **Security vulnerabilities** → Fix immediately
+- 🐛 **Potential bugs** → Review and fix if valid
+- 📝 **Missing error handling** → Add proper error handling  
+- 🔧 **Performance issues** → Optimize if significant
+- 📚 **Missing documentation** → Add if critical
+
+**For MINOR Suggestions** (optional):
+- 🎨 **Code style preferences** → Document reasoning if not following
+- 💡 **Alternative approaches** → Consider but not mandatory
+- 📊 **Micro-optimizations** → Implement if time permits
+- 🔄 **Refactoring suggestions** → Consider for future improvements
+
+#### 4. **Addressing Feedback**
+```bash
+# If changes needed, update on the same feature branch
+git add .
+git commit -m "Address Copilot feedback: [specific changes]"
+git push
+
+# Request re-review if major changes made
+@github-copilot please re-review the updated changes
+```
+
+#### 5. **Document Decision Rationale**
+When NOT implementing Copilot suggestions, add a comment explaining:
+```
+✅ Copilot Review Addressed:
+- Fixed potential null reference issue in line 45
+- Added error handling for API calls
+- Did not implement suggested refactoring (reason: would break existing functionality)
+- Performance suggestion noted for future consideration
+```
+
+### **Merge Decision Matrix**
+
+| Copilot Feedback | Action Required | Can Merge? |
+|------------------|----------------|------------|
+| 🚨 Security issues | Must fix | ❌ No |
+| 🐛 Critical bugs | Must fix | ❌ No |
+| ⚠️ Potential issues | Review & fix if valid | ⏳ After fixes |
+| 💡 Style suggestions | Optional | ✅ Yes |
+| 📝 Documentation | Add if critical | ✅ Yes* |
+| 🔧 Minor improvements | Consider | ✅ Yes |
+
+*Document reasoning if not adding suggested documentation
+
+### **When to Merge**
+✅ **Safe to merge when:**
+- Copilot review completed
+- All critical issues addressed  
+- Security concerns resolved
+- Legitimate bugs fixed
+- Decision rationale documented
+- All automated checks passing
+
+### **Example Copilot Review Commands**
+```bash
+# Basic review request
+@github-copilot review this pull request
+
+# Focused review request  
+@github-copilot review the security aspects of this pull request
+
+# Re-review after changes
+@github-copilot please review the updated code changes
+
+# Ask for specific feedback
+@github-copilot what are the potential performance issues in this code?
+```
 
 ## 🧪 Testing Requirements
 
@@ -265,10 +389,14 @@ git log --oneline -10
 1. ✅ Monday.com ticket created and tracked
 2. ✅ Feature branch created and pushed
 3. ✅ Code changes committed with proper messages
-4. ✅ Manual testing completed
-5. ✅ Deployment successful (if applicable)
-6. ✅ Monday ticket closed with summary
-7. ✅ Documentation updated (if needed)
+4. ✅ Pull Request created with comprehensive description
+5. ✅ **Copilot review requested and addressed**
+6. ✅ Manual testing completed
+7. ✅ All critical Copilot feedback resolved
+8. ✅ PR merged only after Copilot approval
+9. ✅ Deployment successful (if applicable)
+10. ✅ Monday ticket closed with summary
+11. ✅ Documentation updated (if needed)
 
 ## 🚨 Critical Rules
 
@@ -279,14 +407,19 @@ git log --oneline -10
 - Ignore TypeScript compilation errors
 - Push code with console.log statements (except for debugging)
 - Commit sensitive data (API keys, passwords)
+- **Merge PRs without Copilot review**
+- **Ignore critical Copilot security/bug feedback**
 
 ### **ALWAYS**:
 - Create Monday tickets before starting work
 - Use feature branches for all development
 - Test changes manually before committing
+- **Request Copilot review for every PR**
+- **Address all critical Copilot feedback**
 - Update ticket status throughout development
 - Push branches for backup and visibility
 - Include ticket references in commits
+- **Document rationale when not following Copilot suggestions**
 - Close tickets upon completion
 
 ## 🔄 Continuous Improvement
