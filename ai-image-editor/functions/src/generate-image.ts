@@ -1,6 +1,7 @@
 import * as functions from 'firebase-functions';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 const multer = require('multer');
+const Busboy = require('busboy');
 
 function getGenAI() {
   const config = functions.config();
@@ -63,40 +64,62 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
       console.log('🎯 Direct extraction - mode:', mode);
       
       if (!prompt) {
-        console.log('⚠️ No prompt found in direct extraction, trying multer...');
+        console.log('⚠️ No prompt found in direct extraction, trying busboy...');
         
         try {
-          // Use multer to parse multipart form data
-          const uploadMiddleware = upload.any();
+          // Use busboy to parse the raw buffer directly
+          const fields: any = {};
+          const files: any[] = [];
           
-          await new Promise<void>((resolve, reject) => {
-            uploadMiddleware(req as any, res as any, (err: any) => {
-              if (err) {
-                console.error('Multer error:', err);
-                reject(err);
-              } else {
-                resolve();
-              }
+          const contentType = req.headers['content-type'];
+          const busboy = new Busboy({ headers: { 'content-type': contentType } });
+          
+          busboy.on('field', (fieldname: string, val: string) => {
+            console.log('📝 Busboy field:', fieldname, '=', val);
+            fields[fieldname] = val;
+          });
+          
+          busboy.on('file', (fieldname: string, file: any, filename: string, encoding: string, mimetype: string) => {
+            console.log('📁 Busboy file:', fieldname, filename, mimetype);
+            const buffers: any[] = [];
+            file.on('data', (data: any) => buffers.push(data));
+            file.on('end', () => {
+              files.push({
+                fieldname,
+                originalname: filename,
+                mimetype,
+                buffer: Buffer.concat(buffers)
+              });
             });
           });
           
-          // Extract prompt and mode from parsed form data
-          console.log('📝 DEBUG - req.body after multer:', req.body);
-          console.log('📁 DEBUG - req.files after multer:', (req as any).files);
-          console.log('📋 DEBUG - req.body.prompt:', req.body?.prompt);
-          console.log('🎯 DEBUG - req.body.mode:', req.body?.mode);
+          await new Promise<void>((resolve, reject) => {
+            busboy.on('finish', () => {
+              console.log('📝 Busboy finished - fields:', fields);
+              console.log('📁 Busboy finished - files:', files.length);
+              resolve();
+            });
+            
+            busboy.on('error', (err: any) => {
+              console.error('Busboy error:', err);
+              reject(err);
+            });
+            
+            // Write the raw buffer to busboy
+            busboy.write(req.body);
+            busboy.end();
+          });
           
-          prompt = req.body?.prompt || 'Generate a beautiful AI artwork';
-          mode = req.body?.mode || 'chat';
-          const files = (req as any).files || [];
+          prompt = fields.prompt || 'Generate a beautiful AI artwork';
+          mode = fields.mode || 'chat';
           
-          console.log('🎨 Using prompt after multer:', prompt);
-          console.log('🎯 Using mode after multer:', mode);
+          console.log('🎨 Using prompt after busboy:', prompt);
+          console.log('🎯 Using mode after busboy:', mode);
           console.log('📁 Files parsed:', files.length);
           
           await processImageGeneration({ body: { prompt, mode }, files: files, isMultipartRequest: true } as any, res);
-        } catch (multerError) {
-          console.error('Error parsing multipart data:', multerError);
+        } catch (busboyError) {
+          console.error('Error parsing multipart data:', busboyError);
           
           // Fallback: use whatever was extracted directly or default
           prompt = prompt || 'Generate a beautiful AI artwork';
