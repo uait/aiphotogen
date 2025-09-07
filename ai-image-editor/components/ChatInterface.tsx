@@ -248,9 +248,23 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
         // Let browser set Content-Type for FormData
       } else {
         // Use JSON for text-only requests
+        // For text chat, include conversation history for context
+        let conversationHistory: any[] = [];
+        
+        if (activeTab === 'chat' && conversationId) {
+          // Convert current messages to Gemini conversation format
+          conversationHistory = messages
+            .filter(msg => !msg.isLoading) // Exclude loading messages
+            .map(msg => ({
+              role: msg.isUser ? 'user' : 'model',
+              parts: [{ text: msg.text || '' }]
+            }));
+        }
+        
         requestBody = JSON.stringify({
           prompt: userMessage || '',
-          mode: activeTab
+          mode: activeTab,
+          conversationHistory: conversationHistory
         });
         requestHeaders = {
           'Content-Type': 'application/json'

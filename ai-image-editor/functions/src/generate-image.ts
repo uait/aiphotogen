@@ -158,6 +158,7 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
     const files = req.files || [];
     const mode = req.body?.mode as string || 'chat'; // Default to chat mode for safety
     const isMultipartRequest = req.isMultipartRequest || false;
+    const conversationHistory = req.body?.conversationHistory || [];
     
     if (!prompt && files.length === 0) {
       res.status(400).json({
@@ -334,13 +335,40 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
       // Use regular chat model for text-only conversations
       console.log('📝 ENTERING TEXT CHAT MODE - using gemini-2.0-flash-exp');
       console.log('📝 Text chat prompt:', prompt);
+      console.log('📝 Conversation history length:', conversationHistory.length);
+    console.log('📝 Conversation history sample:', JSON.stringify(conversationHistory.slice(-2), null, 2)); // Show last 2 messages for debugging
       
       const genAI = getGenAI();
       const model = genAI.getGenerativeModel({ 
         model: 'gemini-2.0-flash-exp'
       });
       
-      const result = await model.generateContent(prompt);
+      let result;
+      
+      if (conversationHistory.length > 0) {
+        // Multi-turn conversation with history
+        console.log('📝 Using multi-turn conversation with history');
+        
+        // Create conversation contents by combining history with current prompt
+        const contents = [
+          ...conversationHistory,
+          {
+            role: 'user',
+            parts: [{ text: prompt }]
+          }
+        ];
+        
+        console.log('📝 Total conversation turns:', contents.length);
+        
+        result = await model.generateContent({
+          contents: contents
+        });
+      } else {
+        // Single-turn conversation (first message)
+        console.log('📝 Using single-turn conversation (first message)');
+        result = await model.generateContent(prompt);
+      }
+      
       const response = await result.response;
       const text = response.text();
       
