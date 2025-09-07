@@ -1,6 +1,6 @@
 name: Deploy to Firebase Hosting and Functions
 
-# Only deploy when code is merged into master branch
+# IMPORTANT: Only deploy when code is merged into master branch (NO pull_request triggers)
 on:
   push:
     branches: [ master ]
