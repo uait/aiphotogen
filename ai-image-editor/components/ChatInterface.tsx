@@ -667,23 +667,131 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
                         message.isUser ? (
                           <p className="whitespace-pre-wrap leading-relaxed">{message.text}</p>
                         ) : (
-                          <div className="prose prose-invert max-w-none">
+                          <div className="prose prose-invert prose-lg max-w-none">
                             <ReactMarkdown 
                               remarkPlugins={[remarkGfm]}
                               components={{
-                                // Customize markdown components for better styling
-                                h1: ({children}) => <h1 className="text-xl font-bold text-white mb-2">{children}</h1>,
-                                h2: ({children}) => <h2 className="text-lg font-bold text-white mb-2">{children}</h2>,
-                                h3: ({children}) => <h3 className="text-md font-bold text-white mb-1">{children}</h3>,
-                                p: ({children}) => <p className="text-gray-200 mb-2 leading-relaxed">{children}</p>,
-                                ul: ({children}) => <ul className="list-disc list-inside text-gray-200 mb-2 space-y-1">{children}</ul>,
-                                ol: ({children}) => <ol className="list-decimal list-inside text-gray-200 mb-2 space-y-1">{children}</ol>,
-                                li: ({children}) => <li className="text-gray-200">{children}</li>,
-                                strong: ({children}) => <strong className="font-bold text-white">{children}</strong>,
-                                em: ({children}) => <em className="italic text-gray-300">{children}</em>,
-                                code: ({children}) => <code className="bg-gray-700 px-1 py-0.5 rounded text-sm text-blue-300">{children}</code>,
-                                pre: ({children}) => <pre className="bg-gray-700 p-3 rounded-lg overflow-x-auto text-sm">{children}</pre>,
-                                blockquote: ({children}) => <blockquote className="border-l-4 border-purple-500 pl-4 italic text-gray-300">{children}</blockquote>
+                                // Enhanced headers with gradient colors and better spacing
+                                h1: ({children}) => (
+                                  <h1 className="text-2xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-4 mt-6 first:mt-0">
+                                    {children}
+                                  </h1>
+                                ),
+                                h2: ({children}) => (
+                                  <h2 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-3 mt-5 first:mt-0">
+                                    {children}
+                                  </h2>
+                                ),
+                                h3: ({children}) => (
+                                  <h3 className="text-lg font-semibold text-white mb-2 mt-4 first:mt-0">
+                                    {children}
+                                  </h3>
+                                ),
+                                h4: ({children}) => (
+                                  <h4 className="text-base font-semibold text-gray-100 mb-2 mt-3">
+                                    {children}
+                                  </h4>
+                                ),
+                                
+                                // Enhanced paragraph styling
+                                p: ({children}) => (
+                                  <p className="text-gray-200 mb-4 leading-relaxed text-base">
+                                    {children}
+                                  </p>
+                                ),
+                                
+                                // Rich list styling with custom bullets and better spacing
+                                ul: ({children}) => (
+                                  <ul className="mb-4 space-y-2 pl-6">
+                                    {children}
+                                  </ul>
+                                ),
+                                ol: ({children}) => (
+                                  <ol className="mb-4 space-y-2 pl-6 list-decimal">
+                                    {children}
+                                  </ol>
+                                ),
+                                li: ({children}) => (
+                                  <li className="text-gray-200 relative pl-2">
+                                    <span className="absolute -left-6 top-0 text-cyan-400 font-bold">•</span>
+                                    {children}
+                                  </li>
+                                ),
+                                
+                                // Enhanced text formatting
+                                strong: ({children}) => (
+                                  <strong className="font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
+                                    {children}
+                                  </strong>
+                                ),
+                                em: ({children}) => (
+                                  <em className="italic text-blue-300 font-medium">
+                                    {children}
+                                  </em>
+                                ),
+                                
+                                // Enhanced code styling
+                                code: ({children}) => (
+                                  <code className="bg-gradient-to-r from-gray-800 to-gray-700 px-2 py-1 rounded-md text-sm font-mono text-emerald-400 border border-gray-600">
+                                    {children}
+                                  </code>
+                                ),
+                                pre: ({children}) => (
+                                  <pre className="bg-gradient-to-br from-gray-800 via-gray-900 to-black p-4 rounded-xl overflow-x-auto text-sm font-mono border border-gray-700 shadow-lg mb-4">
+                                    {children}
+                                  </pre>
+                                ),
+                                
+                                // Enhanced blockquote with rich styling
+                                blockquote: ({children}) => (
+                                  <blockquote className="border-l-4 border-gradient-to-b from-purple-500 to-pink-500 bg-gradient-to-r from-purple-900/20 to-pink-900/20 pl-6 pr-4 py-3 my-4 italic text-gray-300 rounded-r-lg backdrop-blur-sm">
+                                    <div className="flex items-start gap-3">
+                                      <div className="text-purple-400 text-xl mt-1">"</div>
+                                      <div className="flex-1">{children}</div>
+                                    </div>
+                                  </blockquote>
+                                ),
+                                
+                                // Enhanced links (if any)
+                                a: ({children, href}) => (
+                                  <a 
+                                    href={href}
+                                    className="text-blue-400 hover:text-blue-300 underline decoration-blue-400/50 hover:decoration-blue-300 transition-colors duration-200"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    {children}
+                                  </a>
+                                ),
+                                
+                                // Enhanced tables (if any)
+                                table: ({children}) => (
+                                  <div className="overflow-x-auto mb-4">
+                                    <table className="min-w-full border border-gray-700 rounded-lg">
+                                      {children}
+                                    </table>
+                                  </div>
+                                ),
+                                thead: ({children}) => (
+                                  <thead className="bg-gradient-to-r from-gray-800 to-gray-700">
+                                    {children}
+                                  </thead>
+                                ),
+                                th: ({children}) => (
+                                  <th className="px-4 py-2 text-left font-semibold text-white border-b border-gray-600">
+                                    {children}
+                                  </th>
+                                ),
+                                td: ({children}) => (
+                                  <td className="px-4 py-2 text-gray-200 border-b border-gray-700">
+                                    {children}
+                                  </td>
+                                ),
+                                
+                                // Enhanced horizontal rules
+                                hr: () => (
+                                  <hr className="my-6 border-0 h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent" />
+                                )
                               }}
                             >
                               {message.text}
