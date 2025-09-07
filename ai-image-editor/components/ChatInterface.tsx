@@ -20,6 +20,7 @@ interface Message {
   isUser: boolean;
   timestamp: any;
   isLoading?: boolean;
+  conversationType?: 'text' | 'image'; // Track what type of conversation this message belongs to
 }
 
 interface ChatInterfaceProps {
@@ -147,7 +148,12 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
 
     const userMessage = input.trim();
     const images = [...uploadedImages];
-    const currentConvId = conversationId || `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Create conversation type based on current tab and whether images are uploaded
+    const conversationType: 'text' | 'image' = activeTab === 'photo' || images.length > 0 ? 'image' : 'text';
+    
+    // Generate conversation ID with type prefix for better organization
+    const currentConvId = conversationId || `${conversationType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     // Clear input immediately
     setInput('');
@@ -192,6 +198,7 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
       await addDoc(collection(db, 'messages'), {
         userId: user.uid,
         conversationId: currentConvId,
+        conversationType: conversationType,
         text: userMessage,
         images: uploadedUrls,
         isUser: true,
@@ -251,6 +258,7 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
       const aiMessageData: any = {
         userId: user.uid,
         conversationId: currentConvId,
+        conversationType: conversationType,
         isUser: false,
         timestamp: serverTimestamp(),
         modelUsed: result.modelUsed,
