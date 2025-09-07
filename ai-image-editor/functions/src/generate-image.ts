@@ -40,8 +40,9 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
     // This bypasses the multer issues entirely
     
     const contentType = req.headers['content-type'] || '';
+    const isMultipartRequest = contentType.includes('multipart/form-data');
     
-    if (contentType.includes('multipart/form-data')) {
+    if (isMultipartRequest) {
       console.log('⚠️ Multipart form data detected - parsing with multer');
       
       try {
@@ -68,7 +69,7 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
         console.log('🎯 Using mode:', mode);
         console.log('📁 Files parsed:', files.length);
         
-        await processImageGeneration({ body: { prompt, mode }, files: files } as any, res);
+        await processImageGeneration({ body: { prompt, mode }, files: files, isMultipartRequest: true } as any, res);
       } catch (multerError) {
         console.error('Error parsing multipart data:', multerError);
         
@@ -80,7 +81,7 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
         console.log('🎨 Fallback prompt:', prompt);
         console.log('🎯 Fallback mode:', mode);
         
-        await processImageGeneration({ body: { prompt, mode }, files: [] } as any, res);
+        await processImageGeneration({ body: { prompt, mode }, files: [], isMultipartRequest: true } as any, res);
       }
       
     } else if (contentType.includes('application/json')) {
@@ -117,6 +118,7 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
     const prompt = req.body?.prompt as string || 'Generate a beautiful AI artwork';
     const files = req.files || [];
     const mode = req.body?.mode as string || 'chat'; // Default to chat mode for safety
+    const isMultipartRequest = req.isMultipartRequest || false;
     
     if (!prompt && files.length === 0) {
       res.status(400).json({
@@ -126,12 +128,19 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
     }
 
     // Determine which model to use based on explicit mode from frontend
-    const shouldGenerateImage = mode === 'photo' || files.length > 0;
+    // Force image generation if it's a multipart request (file upload attempt)
+    const shouldGenerateImage = mode === 'photo' || files.length > 0 || isMultipartRequest;
     console.log('🔍 DEBUG - Mode value:', `"${mode}"`);
     console.log('🔍 DEBUG - Mode type:', typeof mode);
     console.log('🔍 DEBUG - Mode === "photo":', mode === 'photo');
     console.log('🔍 DEBUG - Mode === "chat":', mode === 'chat');
-    console.log('🤖 Should generate image:', shouldGenerateImage, 'Mode:', mode, 'Has files:', files.length > 0);
+    console.log('🔍 DEBUG - Files length:', files.length);
+    console.log('🔍 DEBUG - Files array:', files);
+    console.log('🔍 DEBUG - Is multipart request:', isMultipartRequest);
+    console.log('🔍 DEBUG - Condition mode === "photo":', mode === 'photo');
+    console.log('🔍 DEBUG - Condition files.length > 0:', files.length > 0);
+    console.log('🔍 DEBUG - Condition isMultipartRequest:', isMultipartRequest);
+    console.log('🤖 Should generate image:', shouldGenerateImage, 'Mode:', mode, 'Has files:', files.length > 0, 'Is multipart:', isMultipartRequest);
     
     if (shouldGenerateImage) {
       // Use Gemini for image generation with the latest model
