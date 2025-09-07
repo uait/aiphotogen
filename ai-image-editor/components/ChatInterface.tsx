@@ -196,17 +196,35 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
         timestamp: serverTimestamp(),
       });
 
-      // Call API
-      const formData = new FormData();
-      if (userMessage) formData.append('prompt', userMessage);
-      formData.append('mode', activeTab); // Add the current mode (chat/photo)
-      images.forEach((image, index) => {
-        formData.append(`image_${index}`, image);
-      });
+      // Call API - use JSON for text-only, FormData for file uploads
+      let requestBody: FormData | string;
+      let requestHeaders: HeadersInit = {};
+
+      if (images.length > 0) {
+        // Use FormData for file uploads
+        const formData = new FormData();
+        if (userMessage) formData.append('prompt', userMessage);
+        formData.append('mode', activeTab);
+        images.forEach((image, index) => {
+          formData.append(`image_${index}`, image);
+        });
+        requestBody = formData;
+        // Let browser set Content-Type for FormData
+      } else {
+        // Use JSON for text-only requests
+        requestBody = JSON.stringify({
+          prompt: userMessage || '',
+          mode: activeTab
+        });
+        requestHeaders = {
+          'Content-Type': 'application/json'
+        };
+      }
 
       const response = await fetch('/api/generate-image', {
         method: 'POST',
-        body: formData,
+        headers: requestHeaders,
+        body: requestBody,
       });
 
       // Check if we got HTML instead of JSON (API route not working)
