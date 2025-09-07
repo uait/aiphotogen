@@ -46,8 +46,33 @@ export default function AccountSection() {
         console.log('API routes not available, using default values');
         setUsage({
           today: { used: 0, limit: 50, remaining: 50 },
-          plan: { id: 'free', name: 'Free', dailyLimit: 50 },
-          subscription: { status: 'free' }
+          thisMonth: { used: 0, projectedMonthly: 0 },
+          plan: { 
+            id: 'free', 
+            name: 'Free', 
+            displayName: 'Free', 
+            price: 0, 
+            currency: 'usd', 
+            interval: 'month', 
+            dailyLimit: 50,
+            allowedTiers: ['lite'],
+            features: [
+              { id: '1', name: 'Basic Image Generation', description: '50 operations per day', enabled: true, limit: 50 }
+            ],
+            isActive: true,
+            sortOrder: 1
+          },
+          subscription: { 
+            id: 'default',
+            userId: 'user',
+            planId: 'free',
+            status: 'active',
+            currentPeriodStart: new Date(),
+            currentPeriodEnd: new Date(),
+            cancelAtPeriodEnd: false,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }
         });
       }
     } catch (error: any) {
@@ -55,8 +80,33 @@ export default function AccountSection() {
       // Fallback for static deployment
       setUsage({
         today: { used: 0, limit: 50, remaining: 50 },
-        plan: { id: 'free', name: 'Free', dailyLimit: 50 },
-        subscription: { status: 'free' }
+        thisMonth: { used: 0, projectedMonthly: 0 },
+        plan: { 
+          id: 'free', 
+          name: 'Free', 
+          displayName: 'Free', 
+          price: 0, 
+          currency: 'usd', 
+          interval: 'month', 
+          dailyLimit: 50,
+          allowedTiers: ['lite'],
+          features: [
+            { id: '1', name: 'Basic Image Generation', description: '50 operations per day', enabled: true, limit: 50 }
+          ],
+          isActive: true,
+          sortOrder: 1
+        },
+        subscription: { 
+          id: 'default',
+          userId: 'user',
+          planId: 'free',
+          status: 'active',
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(),
+          cancelAtPeriodEnd: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
       });
     } finally {
       setLoading(false);
@@ -155,14 +205,14 @@ export default function AccountSection() {
               <Icon size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">PixtorAI {usage.plan.displayName}</h2>
+              <h2 className="text-xl font-bold text-white">PixtorAI {usage.plan.displayName || usage.plan.name || 'Plan'}</h2>
               <p className="text-gray-400">
-                {usage.plan.price === 0 ? 'Free Plan' : `${formatPrice(usage.plan.price)}/${usage.plan.interval}`}
+                {(usage.plan.price || 0) === 0 ? 'Free Plan' : `${formatPrice(usage.plan.price || 0)}/${usage.plan.interval || 'month'}`}
               </p>
             </div>
           </div>
           
-          {usage.plan.price > 0 && (
+          {(usage.plan.price || 0) > 0 && (
             <button
               onClick={handleManageBilling}
               disabled={portalLoading}
@@ -180,25 +230,25 @@ export default function AccountSection() {
             <div className="bg-gray-800/50 rounded-lg p-4">
               <div className="text-sm text-gray-400 mb-1">Status</div>
               <div className={`font-medium ${
-                usage.subscription.status === 'active' ? 'text-[#10F88F]' : 'text-yellow-400'
+                usage.subscription?.status === 'active' ? 'text-[#10F88F]' : 'text-yellow-400'
               }`}>
-                {usage.subscription.status.charAt(0).toUpperCase() + usage.subscription.status.slice(1)}
+                {(usage.subscription?.status || 'free').charAt(0).toUpperCase() + (usage.subscription?.status || 'free').slice(1)}
               </div>
             </div>
             
             <div className="bg-gray-800/50 rounded-lg p-4">
               <div className="text-sm text-gray-400 mb-1">Next Billing</div>
               <div className="font-medium text-white">
-                {usage.plan.price === 0 ? 'N/A' : new Date(usage.subscription.currentPeriodEnd).toLocaleDateString()}
+                {(usage.plan.price || 0) === 0 ? 'N/A' : (usage.subscription?.currentPeriodEnd ? new Date(usage.subscription.currentPeriodEnd).toLocaleDateString() : 'N/A')}
               </div>
             </div>
             
             <div className="bg-gray-800/50 rounded-lg p-4">
               <div className="text-sm text-gray-400 mb-1">Model Access</div>
               <div className="font-medium text-[#00D4FF]">
-                {usage.plan.allowedTiers.map(tier => 
+                {usage.plan.allowedTiers?.map(tier => 
                   tier.charAt(0).toUpperCase() + tier.slice(1)
-                ).join(', ')}
+                ).join(', ') || 'Standard'}
               </div>
             </div>
           </div>
@@ -279,7 +329,7 @@ export default function AccountSection() {
       <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-xl p-6 border border-gray-700">
         <h3 className="text-lg font-semibold text-white mb-4">Your Plan Features</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {usage.plan.features.map((feature) => (
+          {usage.plan.features?.map((feature) => (
             <div key={feature.id} className="flex items-start gap-3 p-3 bg-gray-800/50 rounded-lg">
               <div className="w-2 h-2 bg-[#10F88F] rounded-full mt-2 flex-shrink-0"></div>
               <div>
@@ -292,12 +342,16 @@ export default function AccountSection() {
                 )}
               </div>
             </div>
-          ))}
+          )) || (
+            <div className="col-span-full text-center text-gray-400">
+              No features available
+            </div>
+          )}
         </div>
       </div>
 
       {/* Upgrade CTA for free users */}
-      {usage.plan.id === 'free' && (
+      {(usage.plan?.id || 'free') === 'free' && (
         <div className="bg-gradient-to-r from-[#00D4FF]/10 to-[#7C3AED]/10 border border-[#00D4FF]/20 rounded-xl p-6 text-center">
           <h3 className="text-xl font-bold pixtor-text-gradient mb-2">Ready for More Power?</h3>
           <p className="text-gray-300 mb-4">
