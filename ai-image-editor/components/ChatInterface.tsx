@@ -302,12 +302,24 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
       await addDoc(collection(db, 'messages'), aiMessageData);
 
       // Transform loading message to show result with morphing animation
+      let displayImageUrl = undefined;
+      if (result.isImageGeneration && aiMessageData.generatedImage) {
+        // Handle localStorage references
+        if (aiMessageData.generatedImage.startsWith('local:')) {
+          const imageKey = aiMessageData.generatedImage.replace('local:', '');
+          const storedImage = localStorage.getItem(imageKey);
+          displayImageUrl = storedImage || result.imageUrl; // Fallback to original URL
+        } else {
+          displayImageUrl = aiMessageData.generatedImage;
+        }
+      }
+      
       setMessages(prev => prev.map(msg => 
         msg.id === loadingMsg.id 
           ? {
               ...msg,
               isLoading: false,
-              generatedImage: result.isImageGeneration ? result.imageUrl : undefined,
+              generatedImage: displayImageUrl,
               originalImages: result.isImageGeneration && images.length > 0 ? uploadedUrls : undefined,
               text: result.isImageGeneration ? undefined : result.text
             }
