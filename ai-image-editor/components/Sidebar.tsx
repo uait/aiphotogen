@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Clock, Trash2, Plus, LogOut, Menu, X, BarChart3, Zap } from 'lucide-react';
+import { Clock, Trash2, Plus, LogOut, Menu, X, BarChart3, Zap, MessageSquare, ImageIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { collection, query, where, orderBy, onSnapshot, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
