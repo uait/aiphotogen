@@ -15,6 +15,7 @@ interface Conversation {
   lastMessage: string;
   timestamp: any;
   thumbnail?: string;
+  type: 'text' | 'image';
 }
 
 interface SidebarProps {
@@ -48,13 +49,20 @@ export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProp
           const convId = data.conversationId;
           
           if (convId && !conversationMap.has(convId)) {
+            // Determine conversation type from conversationType field or conversation ID prefix
+            const conversationType = data.conversationType || 
+              (convId.startsWith('image_') ? 'image' : 
+               convId.startsWith('text_') ? 'text' : 
+               (data.images || data.generatedImage ? 'image' : 'text'));
+            
             // Create conversation summary from first message
             conversationMap.set(convId, {
               id: convId,
-              title: data.text?.substring(0, 50) || 'New Conversation',
-              lastMessage: data.text || 'Image conversation',
+              title: data.text?.substring(0, 50) || (conversationType === 'image' ? 'Image Chat' : 'Text Chat'),
+              lastMessage: data.text || (conversationType === 'image' ? 'Image conversation' : 'Text conversation'),
               timestamp: data.timestamp?.toDate() || new Date(),
-              thumbnail: data.images?.[0] || data.generatedImage
+              thumbnail: data.images?.[0] || data.generatedImage,
+              type: conversationType
             });
           }
         });
@@ -241,53 +249,104 @@ export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProp
         </div>
 
         <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 scrollbar-thin">
-          <h3 className="text-[#00D4FF] text-sm font-medium mb-3 flex items-center gap-2">
-            <Clock size={16} />
-            History
-          </h3>
-          
-          {conversations.length === 0 ? (
-            <p className="text-gray-600 text-sm">No conversations yet</p>
-          ) : (
-            <div className="space-y-2">
-              {conversations.map((convo) => (
-                <div
-                  key={convo.id}
-                  onClick={() => onSelectConversation(convo.id)}
-                  className="group p-3 bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg hover:from-[#00D4FF]/10 hover:to-[#7C3AED]/10 hover:border-[#00D4FF]/30 transition-all duration-300 cursor-pointer border border-transparent"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-white font-medium truncate">
-                        {convo.title}
-                      </h4>
-                      <p className="text-gray-400 text-sm truncate mt-1">
-                        {convo.lastMessage}
-                      </p>
+          {/* Text Conversations Section */}
+          <div className="mb-6">
+            <h3 className="text-[#00D4FF] text-sm font-medium mb-3 flex items-center gap-2">
+              <MessageSquare size={16} />
+              Text Chats
+            </h3>
+            
+            {conversations.filter(convo => convo.type === 'text').length === 0 ? (
+              <p className="text-gray-600 text-sm mb-4">No text conversations yet</p>
+            ) : (
+              <div className="space-y-2 mb-4">
+                {conversations.filter(convo => convo.type === 'text').map((convo) => (
+                  <div
+                    key={convo.id}
+                    onClick={() => onSelectConversation(convo.id)}
+                    className="group p-3 bg-gradient-to-r from-blue-900/20 to-cyan-900/20 rounded-lg hover:from-blue-800/30 hover:to-cyan-800/30 hover:border-blue-400/30 transition-all duration-300 cursor-pointer border border-blue-900/30"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <MessageSquare size={14} className="text-blue-400 flex-shrink-0" />
+                          <h4 className="text-white font-medium truncate">
+                            {convo.title}
+                          </h4>
+                        </div>
+                        <p className="text-gray-400 text-sm truncate">
+                          {convo.lastMessage}
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteConversation(convo.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-all"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteConversation(convo.id);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-all"
-                    >
-                      <Trash2 size={16} />
-                    </button>
                   </div>
-                  {convo.thumbnail && !convo.thumbnail.startsWith('local:') && (
-                    <div className="mt-2">
-                      <img
-                        src={convo.thumbnail}
-                        alt="Thumbnail"
-                        className="w-full h-20 object-cover rounded"
-                      />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Image Conversations Section */}
+          <div>
+            <h3 className="text-[#00D4FF] text-sm font-medium mb-3 flex items-center gap-2">
+              <ImageIcon size={16} />
+              Image Chats
+            </h3>
+            
+            {conversations.filter(convo => convo.type === 'image').length === 0 ? (
+              <p className="text-gray-600 text-sm">No image conversations yet</p>
+            ) : (
+              <div className="space-y-2">
+                {conversations.filter(convo => convo.type === 'image').map((convo) => (
+                  <div
+                    key={convo.id}
+                    onClick={() => onSelectConversation(convo.id)}
+                    className="group p-3 bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-lg hover:from-purple-800/30 hover:to-pink-800/30 hover:border-purple-400/30 transition-all duration-300 cursor-pointer border border-purple-900/30"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <ImageIcon size={14} className="text-purple-400 flex-shrink-0" />
+                          <h4 className="text-white font-medium truncate">
+                            {convo.title}
+                          </h4>
+                        </div>
+                        <p className="text-gray-400 text-sm truncate">
+                          {convo.lastMessage}
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteConversation(convo.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-all"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+                    {convo.thumbnail && !convo.thumbnail.startsWith('local:') && (
+                      <div className="mt-2">
+                        <img
+                          src={convo.thumbnail}
+                          alt="Thumbnail"
+                          className="w-full h-20 object-cover rounded"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {user && (
