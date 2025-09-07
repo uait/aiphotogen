@@ -8,6 +8,17 @@ This document provides comprehensive instructions for Claude AI assistants worki
 **Repository**: https://github.com/uait/aiphotogen
 **Tech Stack**: Next.js 14, TypeScript, Firebase (Hosting, Functions, Firestore), Gemini AI, Stripe, TailwindCSS
 
+## 🚀 Pre-Work Setup
+
+### **STEP 0**: Always Start with Git Pull
+Before beginning ANY work on this project:
+
+```bash
+# Ensure you're on master and pull latest changes
+git checkout master
+git pull origin master
+```
+
 ## 📋 Required Workflow: Monday.com Ticket Management
 
 ### **MANDATORY**: Every task must be tracked in Monday.com
@@ -115,23 +126,46 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## 🚀 Deployment Process
 
-### Firebase Functions Deployment
+### **IMPORTANT**: Deployment Only Happens on Master Branch Merges
+
+GitHub Actions will **ONLY** deploy when:
+✅ Code is merged into the `master` branch
+❌ **NOT** on feature branch pushes or pull requests
+
+### Development Workflow:
+```bash
+# 1. Create feature branch (as per Git workflow)
+git checkout -b feature/your-feature-name
+
+# 2. Make changes and commit
+git add .
+git commit -m "Your changes"
+git push -u origin feature/your-feature-name
+
+# 3. Create Pull Request
+# GitHub Actions will NOT deploy at this stage
+
+# 4. After code review, merge to master
+# This triggers automatic deployment to Firebase
+```
+
+### Manual Deployment (Emergency Only):
 ```bash
 # Test locally first
 cd functions
 npm run build
 npm run serve
 
-# Deploy via GitHub Actions (recommended)
-git push origin your-branch-name
-# Or manual deploy if needed:
+# Manual deploy if GitHub Actions fails
 firebase deploy --only functions
 ```
 
 ### Deployment Checklist:
 - [ ] TypeScript compilation passes (`npm run build`)
 - [ ] No ESLint errors
-- [ ] Manual testing completed
+- [ ] Manual testing completed on feature branch
+- [ ] Pull Request created and reviewed
+- [ ] Merged to master branch (triggers deployment)
 - [ ] Monday ticket updated with deployment status
 - [ ] Monitor deployment logs for errors
 

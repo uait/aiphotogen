@@ -1,0 +1,85 @@
+name: Deploy to Firebase Hosting and Functions
+
+# Only deploy when code is merged into master branch
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'ai-image-editor/**'
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./ai-image-editor
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: ai-image-editor/package-lock.json
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Create environment file
+      run: |
+        echo "NEXT_PUBLIC_FIREBASE_API_KEY=${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}" >> .env.local
+        echo "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}" >> .env.local
+        echo "NEXT_PUBLIC_FIREBASE_PROJECT_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}" >> .env.local
+        echo "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}" >> .env.local
+        echo "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}" >> .env.local
+        echo "NEXT_PUBLIC_FIREBASE_APP_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}" >> .env.local
+        echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env.local
+        echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> .env.local
+        echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> .env.local
+        echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env.local
+        echo "STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}" >> .env.local
+        echo "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}" >> .env.local
+        echo "STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}" >> .env.local
+    
+    - name: Temporarily remove API routes for static build
+      run: |
+        if [ -d "app/api" ]; then
+          tar -czf api_backup.tar.gz app/api
+          rm -rf app_api
+        fi
+    
+    - name: Build Next.js app
+      run: npm run build
+    
+    - name: Restore API routes
+      run: |
+        if [ -f "api_backup.tar.gz" ]; then
+          tar -xzf api_backup.tar.gz
+          rm api_backup.tar.gz
+        fi
+    
+    - name: Install Functions dependencies
+      run: |
+        cd functions
+        npm ci
+    
+    - name: Install Firebase CLI and set config
+      run: |
+        npm install -g firebase-tools
+        cd functions
+        firebase functions:config:set \
+          gemini.api_key="${{ secrets.GEMINI_API_KEY }}" \
+          stripe.secret_key="${{ secrets.STRIPE_SECRET_KEY }}" \
+          stripe.webhook_secret="${{ secrets.STRIPE_WEBHOOK_SECRET }}" \
+          stripe.starter_price_id="${{ secrets.STRIPE_STARTER_PRICE_ID }}" \
+          stripe.creator_price_id="${{ secrets.STRIPE_CREATOR_PRICE_ID }}" \
+          stripe.pro_price_id="${{ secrets.STRIPE_PRO_PRICE_ID }}" \
+          --token '${{ secrets.FIREBASE_TOKEN }}' --project '${{ secrets.FIREBASE_PROJECT_ID }}'
+    
+    - name: Deploy to Firebase
+      run: |
+        firebase deploy --force --token '${{ secrets.FIREBASE_TOKEN }}' --project '${{ secrets.FIREBASE_PROJECT_ID }}'
