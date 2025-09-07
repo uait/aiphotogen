@@ -54,12 +54,23 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Load messages for current conversation
+  // Load messages for current conversation and tab mode
   useEffect(() => {
     if (!user) return;
     
     // Clear messages when starting new conversation
     if (!conversationId) {
+      setMessages([]);
+      return;
+    }
+
+    // Check if the conversation type matches the current tab
+    const expectedConversationType = activeTab === 'photo' ? 'image' : 'text';
+    const conversationPrefix = conversationId.split('_')[0];
+    
+    // If conversation type doesn't match current tab, clear messages and start new conversation
+    if ((expectedConversationType === 'image' && conversationPrefix !== 'image') ||
+        (expectedConversationType === 'text' && conversationPrefix !== 'text')) {
       setMessages([]);
       return;
     }
@@ -131,7 +142,23 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
     );
 
     return () => unsubscribe();
-  }, [user, conversationId]);
+  }, [user, conversationId, activeTab]);
+
+  // Handle tab switching - clear incompatible conversations
+  useEffect(() => {
+    if (!conversationId) return;
+    
+    const expectedConversationType = activeTab === 'photo' ? 'image' : 'text';
+    const conversationPrefix = conversationId.split('_')[0];
+    
+    // If conversation type doesn't match current tab, we should start fresh
+    if ((expectedConversationType === 'image' && conversationPrefix !== 'image') ||
+        (expectedConversationType === 'text' && conversationPrefix !== 'text')) {
+      // This will trigger the parent component to clear the conversation
+      // For now, just clear messages locally
+      setMessages([]);
+    }
+  }, [activeTab, conversationId]);
 
   const uploadImageToStorage = async (file: File): Promise<string> => {
     const storageRef = ref(storage, `images/${user?.uid}/${Date.now()}_${file.name}`);
