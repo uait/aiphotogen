@@ -198,7 +198,7 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
 
       // Call API - use JSON for text-only, FormData for file uploads
       let requestBody: FormData | string;
-      let contentType: HeadersInit = {};
+      let requestHeaders: HeadersInit = {};
 
       if (images.length > 0) {
         // Use FormData for file uploads
@@ -216,14 +216,14 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
           prompt: userMessage || '',
           mode: activeTab
         });
-        contentType = {
+        requestHeaders = {
           'Content-Type': 'application/json'
         };
       }
 
       const response = await fetch('/api/generate-image', {
         method: 'POST',
-        headers: contentType,
+        headers: requestHeaders,
         body: requestBody,
       });
 
