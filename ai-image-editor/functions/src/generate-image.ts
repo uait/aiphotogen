@@ -1,28 +1,11 @@
 import * as functions from 'firebase-functions';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-const multer = require('multer');
 const Busboy = require('busboy');
 
 function getGenAI() {
   const config = functions.config();
   return new GoogleGenerativeAI(config.gemini?.api_key || '');
 }
-
-// Multer configuration for file uploads
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { 
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-    files: 2 // Max 2 files
-  },
-  fileFilter: (req: any, file: any, cb: any) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'));
-    }
-  }
-});
 
 // Removed keyword-based detection - now using explicit mode parameter from frontend
 
