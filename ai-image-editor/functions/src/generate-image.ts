@@ -44,30 +44,44 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
     if (contentType.includes('multipart/form-data')) {
       console.log('⚠️ Multipart form data detected - parsing with multer');
       
-      // Use multer to parse multipart form data
-      const uploadMiddleware = upload.any();
-      
-      await new Promise<void>((resolve, reject) => {
-        uploadMiddleware(req as any, res as any, (err: any) => {
-          if (err) {
-            console.error('Multer error:', err);
-            reject(err);
-          } else {
-            resolve();
-          }
+      try {
+        // Use multer to parse multipart form data
+        const uploadMiddleware = upload.any();
+        
+        await new Promise<void>((resolve, reject) => {
+          uploadMiddleware(req as any, res as any, (err: any) => {
+            if (err) {
+              console.error('Multer error:', err);
+              reject(err);
+            } else {
+              resolve();
+            }
+          });
         });
-      });
-      
-      // Extract prompt and mode from parsed form data
-      const prompt = req.body?.prompt || 'Generate a beautiful AI artwork';
-      const mode = req.body?.mode || 'chat';
-      const files = (req as any).files || [];
-      
-      console.log('🎨 Using prompt:', prompt);
-      console.log('🎯 Using mode:', mode);
-      console.log('📁 Files parsed:', files.length);
-      
-      await processImageGeneration({ body: { prompt, mode }, files: files } as any, res);
+        
+        // Extract prompt and mode from parsed form data
+        const prompt = req.body?.prompt || 'Generate a beautiful AI artwork';
+        const mode = req.body?.mode || 'chat';
+        const files = (req as any).files || [];
+        
+        console.log('🎨 Using prompt:', prompt);
+        console.log('🎯 Using mode:', mode);
+        console.log('📁 Files parsed:', files.length);
+        
+        await processImageGeneration({ body: { prompt, mode }, files: files } as any, res);
+      } catch (multerError) {
+        console.error('Error parsing multipart data:', multerError);
+        
+        // Fallback: try to extract data from req.body directly
+        console.log('🔄 Falling back to direct body parsing');
+        const prompt = req.body?.prompt || 'Generate a beautiful AI artwork';
+        const mode = req.body?.mode || 'chat';
+        
+        console.log('🎨 Fallback prompt:', prompt);
+        console.log('🎯 Fallback mode:', mode);
+        
+        await processImageGeneration({ body: { prompt, mode }, files: [] } as any, res);
+      }
       
     } else if (contentType.includes('application/json')) {
       console.log('📝 Processing JSON request');
@@ -82,7 +96,14 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
     }
   } catch (error) {
     console.error('Request handling error:', error);
-    res.status(500).json({ error: 'Request handling failed' });
+    
+    // Ensure we always send a response
+    if (!res.headersSent) {
+      res.status(500).json({ 
+        error: 'Request handling failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
   }
 };
 
@@ -288,9 +309,14 @@ async function processImageGeneration(req: any, res: functions.Response): Promis
 
   } catch (error: any) {
     console.error('Error processing request:', error);
-    res.status(500).json({
-      error: error.message || 'Failed to process request'
-    });
+    
+    // Ensure we always send a response
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: error.message || 'Failed to process request',
+        details: error.stack || 'No stack trace available'
+      });
+    }
     return;
   }
 }
