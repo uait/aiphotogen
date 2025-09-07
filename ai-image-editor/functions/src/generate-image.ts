@@ -51,6 +51,11 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
       
       // Try to extract data directly without multer first
       console.log('📝 Trying direct form data extraction');
+      console.log('📝 Raw req.body:', req.body);
+      console.log('📝 Raw req.body type:', typeof req.body);
+      console.log('📝 Raw req.body.prompt:', req.body?.prompt);
+      console.log('📝 Raw req.body.get:', typeof req.body?.get);
+      
       let prompt = req.body?.prompt || req.body?.get?.('prompt');
       let mode = req.body?.mode || req.body?.get?.('mode') || 'chat';
       
