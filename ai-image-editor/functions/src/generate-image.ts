@@ -35,6 +35,8 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
     console.log('🔍 Content-Type:', req.headers['content-type']);
     console.log('🔍 Request method:', req.method);
     console.log('🔍 Raw body available:', !!req.body);
+    console.log('🔍 Raw body:', req.body);
+    console.log('🔍 Raw body keys:', req.body ? Object.keys(req.body) : 'no body');
     
     // For now, let's just handle text prompts (no file uploads)
     // This bypasses the multer issues entirely
@@ -134,7 +136,9 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
 
 async function processImageGeneration(req: any, res: functions.Response): Promise<void> {
   try {
+    console.log('🔥 === ENTERING processImageGeneration ===');
     console.log('📝 Request body keys:', Object.keys(req.body || {}));
+    console.log('📝 Full request body:', req.body);
     console.log('📁 Files received:', req.files ? req.files.length : 0);
     console.log('📋 Body prompt:', req.body?.prompt);
     console.log('🎯 Mode:', req.body?.mode);
