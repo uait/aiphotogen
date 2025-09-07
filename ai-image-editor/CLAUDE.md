@@ -8,6 +8,8 @@ This document provides comprehensive instructions for Claude AI assistants worki
 **Repository**: https://github.com/uait/aiphotogen
 **Tech Stack**: Next.js 14, TypeScript, Firebase (Hosting, Functions, Firestore), Gemini AI, Stripe, TailwindCSS
 
+> **Note**: This is a test change to verify PR deployment workflow configuration.
+
 ## 🚀 Pre-Work Setup
 
 ### **STEP 0**: Always Start with Git Pull
