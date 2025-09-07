@@ -62,15 +62,15 @@ export const generateImage = async (req: functions.Request, res: functions.Respo
             fields[fieldname] = val;
           });
           
-          busboyInstance.on('file', (fieldname: string, file: any, filename: string, encoding: string, mimetype: string) => {
-            console.log('📁 Busboy file:', fieldname, filename, mimetype);
+          busboyInstance.on('file', (fieldname: string, file: any, info: any) => {
+            console.log('📁 Busboy file:', fieldname, info);
             const buffers: any[] = [];
             file.on('data', (data: any) => buffers.push(data));
             file.on('end', () => {
               files.push({
                 fieldname,
-                originalname: filename,
-                mimetype,
+                originalname: info.filename,
+                mimetype: info.mimeType,
                 buffer: Buffer.concat(buffers)
               });
             });
