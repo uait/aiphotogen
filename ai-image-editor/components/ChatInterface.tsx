@@ -8,6 +8,8 @@ import { collection, addDoc, serverTimestamp, query, where, onSnapshot, orderBy 
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Message {
   id: string;
@@ -662,7 +664,32 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
                   ) : (
                     <>
                       {message.text && (
-                        <p className="whitespace-pre-wrap leading-relaxed">{message.text}</p>
+                        message.isUser ? (
+                          <p className="whitespace-pre-wrap leading-relaxed">{message.text}</p>
+                        ) : (
+                          <div className="prose prose-invert max-w-none">
+                            <ReactMarkdown 
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                // Customize markdown components for better styling
+                                h1: ({children}) => <h1 className="text-xl font-bold text-white mb-2">{children}</h1>,
+                                h2: ({children}) => <h2 className="text-lg font-bold text-white mb-2">{children}</h2>,
+                                h3: ({children}) => <h3 className="text-md font-bold text-white mb-1">{children}</h3>,
+                                p: ({children}) => <p className="text-gray-200 mb-2 leading-relaxed">{children}</p>,
+                                ul: ({children}) => <ul className="list-disc list-inside text-gray-200 mb-2 space-y-1">{children}</ul>,
+                                ol: ({children}) => <ol className="list-decimal list-inside text-gray-200 mb-2 space-y-1">{children}</ol>,
+                                li: ({children}) => <li className="text-gray-200">{children}</li>,
+                                strong: ({children}) => <strong className="font-bold text-white">{children}</strong>,
+                                em: ({children}) => <em className="italic text-gray-300">{children}</em>,
+                                code: ({children}) => <code className="bg-gray-700 px-1 py-0.5 rounded text-sm text-blue-300">{children}</code>,
+                                pre: ({children}) => <pre className="bg-gray-700 p-3 rounded-lg overflow-x-auto text-sm">{children}</pre>,
+                                blockquote: ({children}) => <blockquote className="border-l-4 border-purple-500 pl-4 italic text-gray-300">{children}</blockquote>
+                              }}
+                            >
+                              {message.text}
+                            </ReactMarkdown>
+                          </div>
+                        )
                       )}
                       
                       {/* Only show original images for user messages (not AI responses with generated images) */}
