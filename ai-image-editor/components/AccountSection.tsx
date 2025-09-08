@@ -149,11 +149,11 @@ export default function AccountSection() {
 
   if (!user) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="text-center py-12">
-          <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">Account Required</h2>
-          <p className="text-gray-400">Please sign in to view your account information</p>
+      <div className="max-w-4xl mx-auto p-3 sm:p-6">
+        <div className="text-center py-8 sm:py-12">
+          <Settings className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Account Required</h2>
+          <p className="text-sm sm:text-base text-gray-400 px-4">Please sign in to view your account information</p>
         </div>
       </div>
     );
@@ -161,10 +161,10 @@ export default function AccountSection() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="text-center py-12">
-          <div className="animate-spin w-8 h-8 border-2 border-[#00D4FF] border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading account information...</p>
+      <div className="max-w-4xl mx-auto p-3 sm:p-6">
+        <div className="text-center py-8 sm:py-12">
+          <div className="animate-spin w-6 h-6 sm:w-8 sm:h-8 border-2 border-[#00D4FF] border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-sm sm:text-base text-gray-400">Loading account information...</p>
         </div>
       </div>
     );
@@ -172,12 +172,12 @@ export default function AccountSection() {
 
   if (!usage) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="text-center py-12">
-          <p className="text-red-400">Failed to load account information</p>
+      <div className="max-w-4xl mx-auto p-3 sm:p-6">
+        <div className="text-center py-8 sm:py-12">
+          <p className="text-red-400 text-sm sm:text-base">Failed to load account information</p>
           <button 
             onClick={loadUsageData}
-            className="mt-4 px-4 py-2 bg-[#00D4FF] text-white rounded-lg hover:bg-[#00B8E6] transition-colors"
+            className="mt-4 px-4 py-2 sm:px-6 sm:py-3 bg-[#00D4FF] text-white rounded-lg hover:bg-[#00B8E6] transition-colors text-sm sm:text-base touch-manipulation"
           >
             Retry
           </button>
@@ -190,23 +190,23 @@ export default function AccountSection() {
   const usagePercentage = (usage.today.used / usage.today.limit) * 100;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-4xl mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold pixtor-text-gradient mb-2">Account Dashboard</h1>
-        <p className="text-gray-400">Manage your PixtorAI subscription and usage</p>
+      <div className="text-center mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold pixtor-text-gradient mb-2">Account Dashboard</h1>
+        <p className="text-sm sm:text-base text-gray-400 px-4">Manage your PixtorAI subscription and usage</p>
       </div>
 
       {/* Current Plan Card */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-2xl p-6 border border-[#00D4FF]/20 pixtor-glow">
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#00D4FF] to-[#7C3AED] rounded-xl flex items-center justify-center text-white">
-              <Icon size={24} />
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-2xl p-4 sm:p-6 border border-[#00D4FF]/20 pixtor-glow">
+        <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4 mb-4 sm:mb-6">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#00D4FF] to-[#7C3AED] rounded-xl flex items-center justify-center text-white">
+              <Icon size={20} className="sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">PixtorAI {usage.plan.displayName || usage.plan.name || 'Plan'}</h2>
-              <p className="text-gray-400">
+              <h2 className="text-lg sm:text-xl font-bold text-white">PixtorAI {usage.plan.displayName || usage.plan.name || 'Plan'}</h2>
+              <p className="text-sm sm:text-base text-gray-400">
                 {(usage.plan.price || 0) === 0 ? 'Free Plan' : `${formatPrice(usage.plan.price || 0)}/${usage.plan.interval || 'month'}`}
               </p>
             </div>
@@ -216,17 +216,17 @@ export default function AccountSection() {
             <button
               onClick={handleManageBilling}
               disabled={portalLoading}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-700 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-500 transition-all duration-300"
+              className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3 bg-gradient-to-r from-gray-700 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-500 transition-all duration-300 text-sm sm:text-base touch-manipulation w-full sm:w-auto"
             >
-              <CreditCard size={16} />
-              {portalLoading ? 'Loading...' : 'Manage Billing'}
+              <CreditCard size={14} className="sm:w-4 sm:h-4" />
+              <span>{portalLoading ? 'Loading...' : 'Manage Billing'}</span>
             </button>
           )}
         </div>
 
         {/* Subscription Status */}
         {usage.subscription && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div className="bg-gray-800/50 rounded-lg p-4">
               <div className="text-sm text-gray-400 mb-1">Status</div>
               <div className={`font-medium ${
@@ -256,12 +256,12 @@ export default function AccountSection() {
       </div>
 
       {/* Usage Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* Today's Usage */}
-        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-xl p-6 border border-gray-700">
+        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-xl p-4 sm:p-6 border border-gray-700">
           <div className="flex items-center gap-3 mb-4">
-            <BarChart3 className="text-[#00D4FF]" size={24} />
-            <h3 className="text-lg font-semibold text-white">Today's Usage</h3>
+            <BarChart3 className="text-[#00D4FF]" size={20} className="sm:w-6 sm:h-6" />
+            <h3 className="text-base sm:text-lg font-semibold text-white">Today's Usage</h3>
           </div>
           
           <div className="mb-4">
@@ -352,14 +352,14 @@ export default function AccountSection() {
 
       {/* Upgrade CTA for free users */}
       {(usage.plan?.id || 'free') === 'free' && (
-        <div className="bg-gradient-to-r from-[#00D4FF]/10 to-[#7C3AED]/10 border border-[#00D4FF]/20 rounded-xl p-6 text-center">
-          <h3 className="text-xl font-bold pixtor-text-gradient mb-2">Ready for More Power?</h3>
-          <p className="text-gray-300 mb-4">
+        <div className="bg-gradient-to-r from-[#00D4FF]/10 to-[#7C3AED]/10 border border-[#00D4FF]/20 rounded-xl p-4 sm:p-6 text-center">
+          <h3 className="text-lg sm:text-xl font-bold pixtor-text-gradient mb-2">Ready for More Power?</h3>
+          <p className="text-sm sm:text-base text-gray-300 mb-4 px-2">
             Upgrade to unlock higher limits, better models, and advanced features
           </p>
           <button
             onClick={() => window.location.href = '/#pricing'}
-            className="px-6 py-3 pixtor-gradient text-white rounded-lg font-medium pixtor-gradient-hover transition-all duration-300 pixtor-glow"
+            className="px-4 py-2 sm:px-6 sm:py-3 pixtor-gradient text-white rounded-lg font-medium pixtor-gradient-hover transition-all duration-300 pixtor-glow text-sm sm:text-base touch-manipulation"
           >
             View Pricing Plans
           </button>

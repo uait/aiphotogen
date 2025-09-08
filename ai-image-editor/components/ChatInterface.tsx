@@ -595,32 +595,34 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
     <div className="flex flex-col h-full bg-gray-950">
       {/* Tabs */}
       <div className="border-b border-gray-800 bg-gray-900 bg-opacity-50">
-        <div className="px-4 py-3">
+        <div className="px-2 sm:px-4 py-3">
           <div className="flex space-x-1">
             <button
               onClick={() => setActiveTab('chat')}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+              className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all ${
                 activeTab === 'chat'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
                   : 'text-gray-400 hover:text-white hover:bg-gray-800'
               }`}
             >
-              <div className="flex items-center gap-2">
-                <MessageSquare size={16} />
-                Text Chat
+              <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2">
+                <MessageSquare size={14} className="sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">Text Chat</span>
+                <span className="xs:hidden">Chat</span>
               </div>
             </button>
             <button
               onClick={() => setActiveTab('photo')}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+              className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all ${
                 activeTab === 'photo'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
                   : 'text-gray-400 hover:text-white hover:bg-gray-800'
               }`}
             >
-              <div className="flex items-center gap-2">
-                <ImageIcon size={16} />
-                Photo Editing
+              <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2">
+                <ImageIcon size={14} className="sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">Photo Editing</span>
+                <span className="xs:hidden">Photo</span>
               </div>
             </button>
           </div>
@@ -628,7 +630,7 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
       </div>
       
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+      <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="bg-gradient-to-br from-purple-600 to-pink-600 p-6 rounded-full mb-6">
@@ -638,10 +640,10 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
                 <ImageIcon className="w-12 h-12 text-white" />
               )}
             </div>
-            <h3 className="text-2xl font-bold text-white mb-3">
+            <h3 className="text-lg sm:text-2xl font-bold text-white mb-3">
               {activeTab === 'chat' ? 'Start a Conversation' : 'Edit Your Photos'}
             </h3>
-            <p className="text-gray-400 max-w-md leading-relaxed">
+            <p className="text-sm sm:text-base text-gray-400 max-w-md leading-relaxed px-4 sm:px-0">
               {activeTab === 'chat' 
                 ? 'Ask me anything or describe an image you want to create. I can help with questions, creative ideas, and more!'
                 : 'Upload up to 2 images and tell me how you want them edited. I can enhance, modify, transform, or completely reimagine your photos!'}
@@ -660,14 +662,14 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
             >
               {/* Avatar */}
               {!message.isUser && (
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
               )}
 
               {/* Message Content */}
-              <div className={`max-w-2xl ${message.isUser ? 'order-first' : ''}`}>
-                <div className={`rounded-2xl p-4 ${
+              <div className={`max-w-full sm:max-w-2xl ${message.isUser ? 'order-first' : ''}`}>
+                <div className={`rounded-2xl p-3 sm:p-4 ${
                   message.isUser 
                     ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white ml-auto' 
                     : 'bg-gray-800 text-white'
@@ -964,8 +966,8 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
 
               {/* User Avatar */}
               {message.isUser && (
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
               )}
             </motion.div>
@@ -977,12 +979,13 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
       {/* Input Area */}
       <div className="border-t border-gray-800 bg-gray-900 bg-opacity-50 backdrop-blur-sm">
         {/* AI Model Indicator */}
-        <div className="px-4 pt-3 pb-2">
+        <div className="px-2 sm:px-4 pt-3 pb-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs text-gray-400">
+            <div className="flex items-center gap-1 sm:gap-2 text-xs text-gray-400">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span>Active Model: </span>
-              <span className="text-white font-medium">
+              <span className="hidden sm:inline">Active Model: </span>
+              <span className="sm:hidden">Model: </span>
+              <span className="text-white font-medium text-xs truncate">
                 {activeTab === 'photo' || uploadedImages.length > 0 || input.trim().toLowerCase().split(' ').some(word => 
                   ['generate', 'create', 'make', 'draw', 'design', 'produce', 'image', 'picture', 'photo', 'illustration', 'artwork', 'edit', 'modify', 'enhance', 'transform', 'change', 'add', 'remove'].includes(word)
                 ) 
@@ -997,7 +1000,7 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
         </div>
         {/* Image Preview */}
         {uploadedImages.length > 0 && (
-          <div className="px-4 pt-4">
+          <div className="px-2 sm:px-4 pt-4">
             <div className="flex gap-2 pb-2">
               {uploadedImages.map((file, index) => {
                 const isAutoAdded = autoAddedImages.some((_, i) => i === index);
@@ -1040,7 +1043,7 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
         )}
 
         {/* Input Box */}
-        <div className="px-4 pb-4 pt-2">
+        <div className="px-2 sm:px-4 pb-4 pt-2">
           <div
             className={`relative bg-gray-800 rounded-2xl border-2 transition-all ${
               dragActive 
@@ -1051,14 +1054,14 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
             onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
             onDragLeave={() => setDragActive(false)}
           >
-            <div className="flex items-end gap-2 p-3">
+            <div className="flex items-end gap-2 p-2 sm:p-3">
               {/* Upload Button */}
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="p-2 text-gray-400 hover:text-purple-400 hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
                 title="Upload images"
               >
-                <ImageIcon size={20} />
+                <ImageIcon size={18} className="sm:w-5 sm:h-5" />
               </button>
 
               {/* Text Input */}
@@ -1073,7 +1076,7 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
                   }
                 }}
                 placeholder={dragActive ? "Drop images here..." : "Type a message or ask me to create something amazing..."}
-                className="flex-1 bg-transparent text-white placeholder-gray-400 resize-none outline-none max-h-32 min-h-[20px] py-2"
+                className="flex-1 bg-transparent text-white placeholder-gray-400 resize-none outline-none max-h-32 min-h-[20px] py-2 text-sm sm:text-base"
                 rows={1}
                 disabled={isGenerating}
               />
@@ -1085,9 +1088,9 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
                 className="p-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
               >
                 {isGenerating ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <Send size={20} />
+                  <Send size={18} className="sm:w-5 sm:h-5" />
                 )}
               </button>
             </div>

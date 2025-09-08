@@ -168,8 +168,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-2xl max-w-md w-full p-6 relative pixtor-glow border border-[#00D4FF]/20">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-2xl max-w-md w-full mx-2 sm:mx-0 p-4 sm:p-6 relative pixtor-glow border border-[#00D4FF]/20 max-h-[95vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors"
@@ -177,11 +177,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           <X size={24} />
         </button>
 
-        <h2 className="text-2xl font-bold pixtor-text-gradient mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold pixtor-text-gradient mb-4 sm:mb-6 pr-8">
           {mode === 'signin' ? 'Welcome Back to PixtorAI' : 'Join PixtorAI'}
         </h2>
 
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-col sm:flex-row gap-2 mb-4 sm:mb-6">
           <button
             onClick={() => setAuthMethod('email')}
             className={`flex-1 py-2 px-4 rounded-lg transition-all duration-300 ${
@@ -252,11 +252,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </form>
         ) : (
           <form onSubmit={handlePhoneSignIn} className="space-y-4">
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <select
                 value={countryCode}
                 onChange={(e) => setCountryCode(e.target.value)}
-                className="px-3 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00D4FF] border border-gray-700 hover:border-[#00D4FF]/30 transition-all duration-300"
+                className="w-full sm:w-auto px-3 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00D4FF] border border-gray-700 hover:border-[#00D4FF]/30 transition-all duration-300 min-w-0 sm:min-w-[120px]"
               >
                 {countryCodes.map((country) => (
                   <option key={country.code} value={country.code}>
@@ -273,11 +273,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   const value = e.target.value.replace(/[^\d\s\-\(\)]/g, '');
                   setPhoneNumber(value);
                 }}
-                className="flex-1 px-4 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00D4FF] border border-gray-700 hover:border-[#00D4FF]/30 transition-all duration-300"
+                className="flex-1 min-w-0 px-4 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00D4FF] border border-gray-700 hover:border-[#00D4FF]/30 transition-all duration-300"
                 required
               />
             </div>
-            <div className="text-sm text-gray-400">
+            <div className="text-xs sm:text-sm text-gray-400 break-words">
               Example: {countryCode === '+1' ? '(555) 123-4567' : countryCode === '+44' ? '20 7946 0958' : countryCode === '+91' ? '98765 43210' : 'Enter your phone number'}
             </div>
             <button
