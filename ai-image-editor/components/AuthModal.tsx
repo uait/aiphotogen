@@ -9,9 +9,10 @@ import { ConfirmationResult } from 'firebase/auth';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  redirectTo?: string;
 }
 
-export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, redirectTo }: AuthModalProps) {
   const { signUp, signIn, signInWithGoogle, signInWithPhone, verifyOTP, setupRecaptcha } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
@@ -72,6 +73,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     { code: '+7', country: 'RU', flag: '🇷🇺' },
   ];
 
+  const handleAuthSuccess = () => {
+    onClose();
+    if (redirectTo) {
+      window.location.href = redirectTo;
+    }
+  };
+
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -84,7 +92,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         await signIn(email, password);
         toast.success('Signed in successfully!');
       }
-      onClose();
+      handleAuthSuccess();
     } catch (error: any) {
       toast.error(error.message || 'Authentication failed');
     } finally {
@@ -97,7 +105,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     try {
       await signInWithGoogle();
       toast.success('Signed in with Google!');
-      onClose();
+      handleAuthSuccess();
     } catch (error: any) {
       toast.error(error.message || 'Google sign-in failed');
     } finally {
@@ -159,7 +167,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     try {
       await verifyOTP(confirmationResult, otp);
       toast.success('Phone verified successfully!');
-      onClose();
+      handleAuthSuccess();
     } catch (error: any) {
       toast.error(error.message || 'Invalid OTP');
     } finally {

@@ -372,6 +372,7 @@ export default function LandingPage() {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
+        redirectTo="/app"
       />
     </div>
   );
