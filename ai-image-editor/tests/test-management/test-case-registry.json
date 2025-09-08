@@ -1,0 +1,21 @@
+{
+  "testRegistry": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-09-08T03:05:19.729Z",
+    "testSuites": {},
+    "metrics": {
+      "totalTestCases": 0,
+      "criticalTests": 0,
+      "highPriorityTests": 0,
+      "mediumPriorityTests": 0,
+      "browserCoverage": [
+        "chrome",
+        "firefox",
+        "safari",
+        "mobile"
+      ],
+      "testCategories": [],
+      "lastExecutionSummary": null
+    }
+  }
+}

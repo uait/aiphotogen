@@ -11,7 +11,10 @@
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:ui": "playwright test --ui",
-    "test:report": "playwright show-report"
+    "test:report": "playwright show-report",
+    "test:extract": "node tests/test-management/test-extractor.js",
+    "test:sync-monday": "node tests/test-management/monday-integration.js",
+    "test:update-registry": "npm run test:extract && npm run test:sync-monday"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -31,6 +34,8 @@
     "stripe": "^18.5.0"
   },
   "devDependencies": {
+    "@babel/parser": "^7.28.4",
+    "@babel/traverse": "^7.28.4",
     "@eslint/eslintrc": "^3",
     "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4",
@@ -40,6 +45,7 @@
     "axios": "^1.11.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
+    "node-fetch": "^3.3.2",
     "playwright": "^1.55.0",
     "tailwindcss": "^4",
     "typescript": "^5"
