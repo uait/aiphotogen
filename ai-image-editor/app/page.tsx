@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import AuthModal from '@/components/AuthModal';
 import ChatInterface from '@/components/ChatInterface';
 import Sidebar from '@/components/Sidebar';
+import PixtorLogo from '@/components/PixtorLogo';
 import { Sparkles, Zap, CreditCard, Settings } from 'lucide-react';
 import Link from 'next/link';
 
@@ -31,7 +32,7 @@ export default function Home() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black">
         <div className="text-center">
-          <Zap className="w-16 h-16 mx-auto mb-4 animate-pulse pixtor-text-gradient" />
+          <PixtorLogo size="xl" animate={true} showText={false} className="justify-center mb-4" />
           <div className="text-xl font-semibold pixtor-text-gradient mb-2">PixtorAI</div>
           <p className="text-gray-400">Loading your creative workspace...</p>
         </div>
@@ -49,14 +50,9 @@ export default function Home() {
       )}
       
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="flex-shrink-0 bg-gradient-to-r from-gray-900 to-gray-800 border-b border-gray-700 px-6 py-4 pixtor-glow">
+        <header className="flex-shrink-0 bg-gradient-to-r from-gray-900 to-gray-800 border-b border-gray-700 px-4 sm:px-6 py-4 pixtor-glow">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Zap className="w-8 h-8 text-[#00D4FF] pixtor-glow" />
-              <h1 className="text-2xl font-bold pixtor-text-gradient">
-                PixtorAI
-              </h1>
-            </div>
+            <PixtorLogo size="md" animate={true} />
             <div className="flex items-center gap-4">
               <Link 
                 href="/pricing"
@@ -93,12 +89,12 @@ export default function Home() {
             <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black">
               <div className="text-center max-w-lg mx-auto px-4">
                 <div className="relative mb-8">
-                  <Zap className="w-24 h-24 text-[#00D4FF] mx-auto mb-4 pixtor-glow animate-pulse" />
-                  <div className="absolute inset-0 w-24 h-24 mx-auto animate-ping">
-                    <Zap className="w-24 h-24 text-[#10F88F] opacity-20" />
+                  <PixtorLogo size="xxl" animate={true} showText={false} className="justify-center mb-4" />
+                  <div className="absolute inset-0 flex justify-center items-center animate-ping opacity-20">
+                    <PixtorLogo size="xxl" showText={false} />
                   </div>
                 </div>
-                <h2 className="text-4xl font-bold mb-4 pixtor-text-gradient">Welcome to PixtorAI</h2>
+                <h2 className="text-3xl sm:text-4xl font-bold mb-4 pixtor-text-gradient">Welcome to PixtorAI</h2>
                 <p className="text-gray-300 mb-8 text-lg leading-relaxed">
                   Transform your creative vision into reality with AI-powered image generation and editing. 
                   Create stunning visuals from text prompts or enhance your photos with intelligent tools.

@@ -192,31 +192,31 @@ export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProp
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-lg pixtor-glow"
+        className="lg:hidden fixed top-2 left-2 sm:top-4 sm:left-4 z-50 p-2 sm:p-3 bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-lg pixtor-glow touch-manipulation"
       >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
+        {isOpen ? <X size={20} className="sm:w-6 sm:h-6" /> : <Menu size={20} className="sm:w-6 sm:h-6" />}
       </button>
 
-      <div className={`fixed lg:relative inset-y-0 left-0 w-64 bg-gradient-to-b from-gray-900 via-gray-800 to-black border-r border-[#00D4FF]/20 flex flex-col transition-transform z-40 h-full max-h-screen pixtor-glow ${
+      <div className={`fixed lg:relative inset-y-0 left-0 w-72 sm:w-80 lg:w-64 bg-gradient-to-b from-gray-900 via-gray-800 to-black border-r border-[#00D4FF]/20 flex flex-col transition-transform z-40 h-full max-h-screen pixtor-glow ${
         isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
-        <div className="p-4 border-b border-[#00D4FF]/20">
+        <div className="p-3 sm:p-4 border-b border-[#00D4FF]/20">
           <button
             onClick={onNewChat}
-            className="w-full py-3 pixtor-gradient text-white rounded-lg font-medium pixtor-gradient-hover transition-all duration-300 pixtor-glow flex items-center justify-center gap-2 mb-4"
+            className="w-full py-3 sm:py-4 pixtor-gradient text-white rounded-lg font-medium pixtor-gradient-hover transition-all duration-300 pixtor-glow flex items-center justify-center gap-2 mb-3 sm:mb-4 touch-manipulation"
           >
-            <Plus size={20} />
-            New Chat
+            <Plus size={18} className="sm:w-5 sm:h-5" />
+            <span className="text-sm sm:text-base">New Chat</span>
           </button>
 
           {/* Usage Indicator */}
           {usage && (
-            <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg p-3 border border-gray-600">
+            <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg p-2 sm:p-3 border border-gray-600">
               <div className="flex items-center gap-2 mb-2">
-                <BarChart3 size={16} className="text-[#00D4FF]" />
-                <span className="text-sm font-medium text-white">Today's Usage</span>
+                <BarChart3 size={14} className="text-[#00D4FF] sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm font-medium text-white">Today's Usage</span>
               </div>
-              <div className="flex justify-between text-xs text-gray-300 mb-2">
+              <div className="flex justify-between text-xs sm:text-sm text-gray-300 mb-2">
                 <span>{usage.used} / {usage.limit}</span>
                 <span>{usage.remaining} left</span>
               </div>
@@ -231,7 +231,7 @@ export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProp
                 ></div>
               </div>
               {usage.remaining === 0 && (
-                <div className="mt-2 text-xs text-red-400 font-medium">
+                <div className="mt-2 text-xs sm:text-sm text-red-400 font-medium">
                   Daily limit reached
                 </div>
               )}
@@ -239,42 +239,42 @@ export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProp
           )}
 
           {loadingUsage && (
-            <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg p-3 border border-gray-600">
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <div className="animate-spin w-4 h-4 border border-[#00D4FF] border-t-transparent rounded-full"></div>
+            <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg p-2 sm:p-3 border border-gray-600">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-400">
+                <div className="animate-spin w-3 h-3 sm:w-4 sm:h-4 border border-[#00D4FF] border-t-transparent rounded-full"></div>
                 Loading usage...
               </div>
             </div>
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 scrollbar-thin">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 scrollbar-thin">
           {/* Text Conversations Section */}
           <div className="mb-6">
-            <h3 className="text-[#00D4FF] text-sm font-medium mb-3 flex items-center gap-2">
-              <MessageSquare size={16} />
-              Text Chats
+            <h3 className="text-[#00D4FF] text-xs sm:text-sm font-medium mb-3 flex items-center gap-2">
+              <MessageSquare size={14} className="sm:w-4 sm:h-4" />
+              <span>Text Chats</span>
             </h3>
             
             {conversations.filter(convo => convo.type === 'text').length === 0 ? (
-              <p className="text-gray-600 text-sm mb-4">No text conversations yet</p>
+              <p className="text-gray-600 text-xs sm:text-sm mb-4">No text conversations yet</p>
             ) : (
               <div className="space-y-2 mb-4">
                 {conversations.filter(convo => convo.type === 'text').map((convo) => (
                   <div
                     key={convo.id}
                     onClick={() => onSelectConversation(convo.id)}
-                    className="group p-3 bg-gradient-to-r from-blue-900/20 to-cyan-900/20 rounded-lg hover:from-blue-800/30 hover:to-cyan-800/30 hover:border-blue-400/30 transition-all duration-300 cursor-pointer border border-blue-900/30"
+                    className="group p-2 sm:p-3 bg-gradient-to-r from-blue-900/20 to-cyan-900/20 rounded-lg hover:from-blue-800/30 hover:to-cyan-800/30 hover:border-blue-400/30 transition-all duration-300 cursor-pointer border border-blue-900/30 touch-manipulation"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <MessageSquare size={14} className="text-blue-400 flex-shrink-0" />
-                          <h4 className="text-white font-medium truncate">
+                          <MessageSquare size={12} className="text-blue-400 flex-shrink-0 sm:w-3.5 sm:h-3.5" />
+                          <h4 className="text-white font-medium truncate text-xs sm:text-sm">
                             {convo.title}
                           </h4>
                         </div>
-                        <p className="text-gray-400 text-sm truncate">
+                        <p className="text-gray-400 text-xs sm:text-sm truncate">
                           {convo.lastMessage}
                         </p>
                       </div>
@@ -283,9 +283,9 @@ export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProp
                           e.stopPropagation();
                           deleteConversation(convo.id);
                         }}
-                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-all"
+                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-all touch-manipulation"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={14} className="sm:w-4 sm:h-4" />
                       </button>
                     </div>
                   </div>
@@ -296,30 +296,30 @@ export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProp
 
           {/* Image Conversations Section */}
           <div>
-            <h3 className="text-[#00D4FF] text-sm font-medium mb-3 flex items-center gap-2">
-              <ImageIcon size={16} />
-              Image Chats
+            <h3 className="text-[#00D4FF] text-xs sm:text-sm font-medium mb-3 flex items-center gap-2">
+              <ImageIcon size={14} className="sm:w-4 sm:h-4" />
+              <span>Image Chats</span>
             </h3>
             
             {conversations.filter(convo => convo.type === 'image').length === 0 ? (
-              <p className="text-gray-600 text-sm">No image conversations yet</p>
+              <p className="text-gray-600 text-xs sm:text-sm">No image conversations yet</p>
             ) : (
               <div className="space-y-2">
                 {conversations.filter(convo => convo.type === 'image').map((convo) => (
                   <div
                     key={convo.id}
                     onClick={() => onSelectConversation(convo.id)}
-                    className="group p-3 bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-lg hover:from-purple-800/30 hover:to-pink-800/30 hover:border-purple-400/30 transition-all duration-300 cursor-pointer border border-purple-900/30"
+                    className="group p-2 sm:p-3 bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-lg hover:from-purple-800/30 hover:to-pink-800/30 hover:border-purple-400/30 transition-all duration-300 cursor-pointer border border-purple-900/30 touch-manipulation"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <ImageIcon size={14} className="text-purple-400 flex-shrink-0" />
-                          <h4 className="text-white font-medium truncate">
+                          <ImageIcon size={12} className="text-purple-400 flex-shrink-0 sm:w-3.5 sm:h-3.5" />
+                          <h4 className="text-white font-medium truncate text-xs sm:text-sm">
                             {convo.title}
                           </h4>
                         </div>
-                        <p className="text-gray-400 text-sm truncate">
+                        <p className="text-gray-400 text-xs sm:text-sm truncate">
                           {convo.lastMessage}
                         </p>
                       </div>
@@ -328,9 +328,9 @@ export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProp
                           e.stopPropagation();
                           deleteConversation(convo.id);
                         }}
-                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-all"
+                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-all touch-manipulation"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={14} className="sm:w-4 sm:h-4" />
                       </button>
                     </div>
                     {convo.thumbnail && !convo.thumbnail.startsWith('local:') && (
@@ -338,7 +338,7 @@ export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProp
                         <img
                           src={convo.thumbnail}
                           alt="Thumbnail"
-                          className="w-full h-20 object-cover rounded"
+                          className="w-full h-16 sm:h-20 object-cover rounded"
                         />
                       </div>
                     )}
@@ -350,23 +350,23 @@ export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProp
         </div>
 
         {user && (
-          <div className="p-4 border-t border-[#00D4FF]/20 bg-gradient-to-r from-gray-900 to-gray-800 flex-shrink-0">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 pixtor-gradient rounded-full flex items-center justify-center text-white font-medium pixtor-glow">
+          <div className="p-3 sm:p-4 border-t border-[#00D4FF]/20 bg-gradient-to-r from-gray-900 to-gray-800 flex-shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 mb-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 pixtor-gradient rounded-full flex items-center justify-center text-white font-medium pixtor-glow text-xs sm:text-sm">
                 {user.email?.[0].toUpperCase() || user.phoneNumber?.[0] || 'U'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm truncate">
+                <p className="text-white text-xs sm:text-sm truncate">
                   {user.email || user.phoneNumber}
                 </p>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="w-full py-2 bg-gradient-to-r from-gray-800 to-gray-700 text-gray-300 rounded-lg hover:from-red-600/20 hover:to-red-500/20 hover:text-red-400 hover:border-red-500/30 border border-transparent transition-all duration-300 flex items-center justify-center gap-2"
+              className="w-full py-2 sm:py-3 bg-gradient-to-r from-gray-800 to-gray-700 text-gray-300 rounded-lg hover:from-red-600/20 hover:to-red-500/20 hover:text-red-400 hover:border-red-500/30 border border-transparent transition-all duration-300 flex items-center justify-center gap-2 touch-manipulation"
             >
-              <LogOut size={18} />
-              Logout
+              <LogOut size={16} className="sm:w-4.5 sm:h-4.5" />
+              <span className="text-xs sm:text-sm">Logout</span>
             </button>
           </div>
         )}
