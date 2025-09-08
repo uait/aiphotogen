@@ -14,6 +14,14 @@ export const metadata: Metadata = {
   authors: [{ name: "PixtorAI" }],
   creator: "PixtorAI",
   publisher: "PixtorAI",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    minimumScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+    viewportFit: 'cover',
+  },
   icons: {
     icon: '/pixtor-logo.png',
     apple: '/pixtor-logo.png',
