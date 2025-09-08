@@ -1,0 +1,76 @@
+{
+  "executionSummary": {
+    "timestamp": "2025-09-08T03:04:04.731Z",
+    "duration": "42.5 seconds",
+    "totalTests": 15,
+    "expected": 5,
+    "unexpected": 10,
+    "passed": 5,
+    "failed": 10,
+    "testFile": "authentication.spec.ts"
+  },
+  "testResults": [
+    {
+      "testId": "AUTH-001",
+      "name": "should show login/signup options", 
+      "status": "passed",
+      "priority": "high",
+      "category": "authentication",
+      "browsers": {
+        "chromium": "passed",
+        "firefox": "passed",
+        "webkit": "passed",
+        "mobile_chrome": "passed", 
+        "mobile_safari": "passed"
+      },
+      "duration": "1.2s",
+      "description": "Verifies that authentication options are available to users or user is already authenticated"
+    },
+    {
+      "testId": "AUTH-002",
+      "name": "should handle authentication modal/page",
+      "status": "failed",
+      "priority": "high", 
+      "category": "authentication",
+      "browsers": {
+        "chromium": "failed",
+        "firefox": "failed", 
+        "webkit": "passed",
+        "mobile_chrome": "failed",
+        "mobile_safari": "failed"
+      },
+      "duration": "30s timeout",
+      "error": "Test timeout - authentication modal interaction issues",
+      "description": "Tests authentication modal or page functionality when triggered"
+    },
+    {
+      "testId": "AUTH-003", 
+      "name": "should validate authentication form inputs",
+      "status": "failed",
+      "priority": "medium",
+      "category": "form-validation",
+      "browsers": {
+        "chromium": "failed",
+        "firefox": "failed",
+        "webkit": "failed", 
+        "mobile_chrome": "failed",
+        "mobile_safari": "failed"
+      },
+      "duration": "30s timeout",
+      "error": "Element interaction issues with authentication form submission",
+      "description": "Validates email/password input fields and form submission behavior"
+    }
+  ],
+  "issuesSummary": {
+    "criticalIssues": [
+      "Authentication modal interaction timeouts across multiple browsers",
+      "Form submission button interaction blocked by overlay elements"
+    ],
+    "recommendations": [
+      "Review authentication modal z-index and element positioning",
+      "Add better wait conditions for modal loading",
+      "Implement more robust form element selectors",
+      "Consider adding data-testid attributes for reliable element targeting"
+    ]
+  }
+}
