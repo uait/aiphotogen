@@ -49,7 +49,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex overflow-hidden">
+    <div className="h-screen mobile-viewport-fix flex overflow-hidden">
       {user && (
         <Sidebar
           onNewChat={handleNewChat}
@@ -57,31 +57,31 @@ export default function App() {
         />
       )}
       
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="flex-shrink-0 bg-gradient-to-r from-gray-900 to-gray-800 border-b border-gray-700 px-4 sm:px-6 py-4 pixtor-glow">
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        <header className="flex-shrink-0 bg-gradient-to-r from-gray-900 to-gray-800 border-b border-gray-700 px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 pixtor-glow">
           <div className="flex items-center justify-between">
             <Link href="/">
-              <PixtorLogo size="md" animate={true} />
+              <PixtorLogo size="sm" animate={true} className="sm:size-md" />
             </Link>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Link 
                 href="/pricing"
-                className="text-gray-300 hover:text-[#00D4FF] transition-colors font-medium"
+                className="hidden sm:inline text-gray-300 hover:text-[#00D4FF] transition-colors font-medium text-sm"
               >
                 Pricing
               </Link>
               {user ? (
                 <Link 
                   href="/account"
-                  className="flex items-center gap-2 text-gray-300 hover:text-[#00D4FF] transition-colors"
+                  className="flex items-center gap-1 sm:gap-2 text-gray-300 hover:text-[#00D4FF] transition-colors text-sm"
                 >
-                  <Settings size={18} />
-                  Account
+                  <Settings size={16} className="sm:w-[18px] sm:h-[18px]" />
+                  <span className="hidden sm:inline">Account</span>
                 </Link>
               ) : (
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="px-4 py-2 pixtor-gradient text-white rounded-lg font-medium pixtor-gradient-hover transition-all duration-300 pixtor-glow"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 pixtor-gradient text-white rounded-lg font-medium pixtor-gradient-hover transition-all duration-300 pixtor-glow text-sm"
                 >
                   Sign In
                 </button>
@@ -90,7 +90,7 @@ export default function App() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-hidden flex flex-col">
+        <main className="flex-1 overflow-hidden flex flex-col min-h-0">
           {user ? (
             <ChatInterface 
               conversationId={currentConversationId}
