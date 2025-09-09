@@ -115,6 +115,34 @@ Detailed PR description including:
 # ✅ All checks passing  
 # ✅ Any legitimate issues addressed
 # ✅ Monday ticket updated
+
+# 9. MANDATORY: Post-Merge Feature Sign-Off Process
+# After merging any feature or fix, ALWAYS follow this verification workflow:
+
+# a) Pull latest master with merged changes
+git checkout master
+git pull origin master
+
+# b) Monitor deployment logs
+gh run list --limit 3
+gh run view [latest-run-id] --log
+
+# c) Verify deployment success and functionality
+# - Check that GitHub Actions deployment completed successfully
+# - Test the feature on the live site (https://pixtorai.com)
+# - Verify all functionality works as expected
+# - Check for any runtime errors or console warnings
+
+# d) Sign-off documentation
+# Add final verification comment to the Monday ticket:
+# "✅ DEPLOYMENT VERIFIED:
+# - GitHub Actions: SUCCESS
+# - Live Site: Feature working correctly
+# - No runtime errors detected
+# - Signed off by: Claude AI Assistant
+# - Verification completed: [timestamp]"
+
+# e) Close Monday ticket and mark as "Done"
 ```
 
 ### Commit Message Standards:
@@ -394,9 +422,12 @@ git log --oneline -10
 6. ✅ Manual testing completed
 7. ✅ All critical Copilot feedback resolved
 8. ✅ PR merged only after Copilot approval
-9. ✅ Deployment successful (if applicable)
-10. ✅ Monday ticket closed with summary
-11. ✅ Documentation updated (if needed)
+9. ✅ **MANDATORY: Post-merge verification workflow completed**
+10. ✅ **Deployment monitored and verified successful**
+11. ✅ **Live site functionality tested and confirmed**
+12. ✅ **Feature sign-off documented in Monday ticket**
+13. ✅ Monday ticket closed with verification summary
+14. ✅ Documentation updated (if needed)
 
 ## 🚨 Critical Rules
 
@@ -420,7 +451,11 @@ git log --oneline -10
 - Push branches for backup and visibility
 - Include ticket references in commits
 - **Document rationale when not following Copilot suggestions**
-- Close tickets upon completion
+- **Complete post-merge verification workflow**
+- **Monitor deployment logs after merging**
+- **Test live site functionality after deployment**
+- **Sign off on features with verification documentation**
+- Close tickets with comprehensive verification summary
 
 ## 🔄 Continuous Improvement
 
