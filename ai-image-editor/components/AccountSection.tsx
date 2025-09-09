@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Settings, CreditCard, BarChart3, Calendar, Zap, Crown, Star } from 'lucide-react';
+import { Settings, CreditCard, BarChart3, Calendar, Zap, Crown, Star, Brain } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Plan, UserSubscription, GetUsageResponse } from '@/lib/types/subscription';
 import { formatPrice } from '@/lib/config/subscription';
+import { MemoryManagementPanel } from './MemoryManagementPanel';
 import toast from 'react-hot-toast';
 
 const PLAN_ICONS = {
@@ -19,6 +20,7 @@ export default function AccountSection() {
   const [usage, setUsage] = useState<GetUsageResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [showMemoryManagement, setShowMemoryManagement] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -348,6 +350,46 @@ export default function AccountSection() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* AI Memory Management */}
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-xl p-6 border border-gray-700">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Brain className="text-[#7C3AED]" size={24} />
+            <div>
+              <h3 className="text-lg font-semibold text-white">AI Memory & Learning</h3>
+              <p className="text-sm text-gray-400">Manage how your AI assistant remembers and learns from conversations</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowMemoryManagement(!showMemoryManagement)}
+            className="px-4 py-2 bg-gradient-to-r from-[#7C3AED] to-[#00D4FF] text-white rounded-lg hover:from-[#6D28D9] hover:to-[#0EA5E9] transition-all duration-300 text-sm font-medium"
+          >
+            {showMemoryManagement ? 'Hide Settings' : 'Memory Settings'}
+          </button>
+        </div>
+        
+        {showMemoryManagement ? (
+          <div className="mt-6">
+            <MemoryManagementPanel onClose={() => setShowMemoryManagement(false)} />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gray-800/50 rounded-lg p-4">
+              <div className="text-sm text-gray-400 mb-1">Memory Status</div>
+              <div className="font-medium text-[#10F88F]">Active</div>
+            </div>
+            <div className="bg-gray-800/50 rounded-lg p-4">
+              <div className="text-sm text-gray-400 mb-1">Learning Mode</div>
+              <div className="font-medium text-[#00D4FF]">Enabled</div>
+            </div>
+            <div className="bg-gray-800/50 rounded-lg p-4">
+              <div className="text-sm text-gray-400 mb-1">Privacy</div>
+              <div className="font-medium text-white">User Controlled</div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Upgrade CTA for free users */}
