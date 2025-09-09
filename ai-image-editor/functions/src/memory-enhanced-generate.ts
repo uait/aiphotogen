@@ -380,12 +380,15 @@ export const memoryEnhancedGenerate = async (request: EnhancedRequest, response:
       console.error('Background memory save error:', error);
     });
 
-    // Return response with memory metadata
+    // Return response with memory metadata in ChatInterface-compatible format
     response.status(200).json({
       success: true,
-      response: responseText,
+      text: responseText,
+      response: responseText, // Keep for backward compatibility
       model: modelName,
+      modelUsed: modelName, // Add for ChatInterface compatibility
       provider: 'gemini',
+      isImageGeneration: false, // Memory-enhanced generate is text-only for now
       processingTimeMs: processingTime,
       memoryUsed: {
         knownFacts: memoryContext.knownFacts.length,

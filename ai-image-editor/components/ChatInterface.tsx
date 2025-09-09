@@ -515,7 +515,7 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
         conversationType: conversationType,
         isUser: false,
         timestamp: serverTimestamp(),
-        modelUsed: result.modelUsed,
+        modelUsed: result.model || result.modelUsed || 'unknown',
       };
 
       if (result.isImageGeneration) {
@@ -582,7 +582,7 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
             metadata: {
               isImageGeneration: result.isImageGeneration,
               imageUrl: result.isImageGeneration ? result.imageUrl : undefined,
-              modelUsed: result.modelUsed
+              modelUsed: result.model || result.modelUsed || 'unknown'
             }
           };
 
