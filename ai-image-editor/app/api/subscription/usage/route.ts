@@ -4,6 +4,8 @@ import { verifyAuthToken } from '@/lib/firebase-admin';
 import { SubscriptionService } from '@/lib/services/subscription';
 import { GetUsageResponse } from '@/lib/types/subscription';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Verify authentication

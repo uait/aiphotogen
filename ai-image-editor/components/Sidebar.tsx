@@ -21,9 +21,10 @@ interface Conversation {
 interface SidebarProps {
   onNewChat: () => void;
   onSelectConversation: (id: string) => void;
+  refreshUsage?: boolean; // Prop to trigger usage refresh
 }
 
-export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProps) {
+export default function Sidebar({ onNewChat, onSelectConversation, refreshUsage }: SidebarProps) {
   const { user, logout } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -85,7 +86,21 @@ export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProp
   useEffect(() => {
     if (!user) return;
     loadUsageData();
+    
+    // Set up periodic refresh every 30 seconds
+    const interval = setInterval(() => {
+      loadUsageData();
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, [user]);
+
+  // Refresh usage when prop changes
+  useEffect(() => {
+    if (refreshUsage && user) {
+      loadUsageData();
+    }
+  }, [refreshUsage, user]);
 
   const loadUsageData = async () => {
     if (!user) return;
@@ -211,7 +226,7 @@ export default function Sidebar({ onNewChat, onSelectConversation }: SidebarProp
 
           {/* Usage Indicator */}
           {usage && (
-            <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg p-2 sm:p-3 border border-gray-600">
+            <div data-testid="usage-indicator" className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg p-2 sm:p-3 border border-gray-600">
               <div className="flex items-center gap-2 mb-2">
                 <BarChart3 size={14} className="text-[#00D4FF] sm:w-4 sm:h-4" />
                 <span className="text-xs sm:text-sm font-medium text-white">Today's Usage</span>

@@ -177,7 +177,7 @@ export default function AuthModal({ isOpen, onClose, redirectTo }: AuthModalProp
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-2xl max-w-md w-full mx-2 sm:mx-0 p-4 sm:p-6 relative pixtor-glow border border-[#00D4FF]/20 max-h-[95vh] overflow-y-auto">
+      <div data-testid="auth-modal" className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-2xl max-w-md w-full mx-2 sm:mx-0 p-4 sm:p-6 relative pixtor-glow border border-[#00D4FF]/20 max-h-[95vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors"
