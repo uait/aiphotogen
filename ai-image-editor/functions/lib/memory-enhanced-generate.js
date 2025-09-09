@@ -254,37 +254,56 @@ const memoryEnhancedGenerate = async (request, response) => {
             return;
         }
         console.log(`Authenticated user: ${userId}`);
-        // Parse multipart form data
-        const bb = busboy({ headers: request.headers });
+        // Handle both JSON and multipart requests
+        const contentType = request.headers['content-type'] || '';
         let prompt = '';
         let mode = 'chat';
         let conversationId = `conv_${Date.now()}`;
         const files = [];
-        const parsePromise = new Promise((resolve, reject) => {
-            bb.on('field', (fieldname, val) => {
-                console.log(`Field [${fieldname}]: ${val}`);
-                if (fieldname === 'prompt')
-                    prompt = val;
-                if (fieldname === 'mode')
-                    mode = val;
-                if (fieldname === 'conversationId')
-                    conversationId = val;
-            });
-            bb.on('file', (fieldname, file) => {
-                console.log(`File field: ${fieldname}`);
-                const chunks = [];
-                file.on('data', (chunk) => chunks.push(chunk));
-                file.on('end', () => {
-                    if (chunks.length > 0) {
-                        files.push(Buffer.concat(chunks));
-                    }
+        if (contentType.includes('application/json')) {
+            // Handle JSON requests (text-only chat)
+            console.log('📝 Processing JSON request');
+            const body = request.body;
+            prompt = body.prompt || '';
+            mode = body.mode || 'chat';
+            conversationId = body.conversationId || `conv_${Date.now()}`;
+            console.log(`JSON parsed - prompt: "${prompt.substring(0, 100)}...", mode: ${mode}`);
+        }
+        else if (contentType.includes('multipart/form-data')) {
+            // Handle multipart requests (with file uploads)
+            console.log('📁 Processing multipart form data');
+            const bb = busboy({ headers: request.headers });
+            const parsePromise = new Promise((resolve, reject) => {
+                bb.on('field', (fieldname, val) => {
+                    console.log(`Field [${fieldname}]: ${val}`);
+                    if (fieldname === 'prompt')
+                        prompt = val;
+                    if (fieldname === 'mode')
+                        mode = val;
+                    if (fieldname === 'conversationId')
+                        conversationId = val;
                 });
+                bb.on('file', (fieldname, file) => {
+                    console.log(`File field: ${fieldname}`);
+                    const chunks = [];
+                    file.on('data', (chunk) => chunks.push(chunk));
+                    file.on('end', () => {
+                        if (chunks.length > 0) {
+                            files.push(Buffer.concat(chunks));
+                        }
+                    });
+                });
+                bb.on('finish', () => resolve());
+                bb.on('error', (error) => reject(error));
             });
-            bb.on('finish', () => resolve());
-            bb.on('error', (error) => reject(error));
-        });
-        request.pipe(bb);
-        await parsePromise;
+            request.pipe(bb);
+            await parsePromise;
+        }
+        else {
+            console.log(`❌ Unsupported content type: ${contentType}`);
+            response.status(400).json({ error: `Unsupported content type: ${contentType}` });
+            return;
+        }
         if (!prompt) {
             response.status(400).json({ error: 'Prompt is required' });
             return;
