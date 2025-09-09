@@ -40,9 +40,9 @@ export class ShortTermMemoryService {
       
       if (!memory) {
         memory = {
-          id: `stm_${conversationId}`,
-          conversationId,
-          userId,
+          id: `stm_${conversationId}_${userId}`,
+          conversationId: conversationId || '',
+          userId: userId || '',
           messages: [],
           windowSize: memorySettings?.maxSemanticMemories || this.DEFAULT_WINDOW_SIZE,
           createdAt: new Date(),
@@ -53,14 +53,14 @@ export class ShortTermMemoryService {
       // Calculate message importance
       const importance = this.calculateMessageImportance(message, memory.messages);
 
-      // Create short-term message
+      // Create short-term message with fallback values
       const shortTermMessage: ShortTermMessage = {
-        messageId: message.id,
-        content: message.content,
-        role: message.role,
-        modelProvider: message.modelProvider,
-        timestamp: message.timestamp,
-        importance
+        messageId: message.id || `msg_${Date.now()}`,
+        content: message.content || '',
+        role: message.role || 'user',
+        modelProvider: message.modelProvider || 'gemini',
+        timestamp: message.timestamp || new Date(),
+        importance: importance || 0.5
       };
 
       // Add message to memory
@@ -382,15 +382,19 @@ export class ShortTermMemoryService {
       const memoryRef = doc(db, 'shortTermMemories', memory.id);
       
       await setDoc(memoryRef, {
-        conversationId: memory.conversationId,
-        userId: memory.userId,
+        conversationId: memory.conversationId || '',
+        userId: memory.userId || '',
         messages: memory.messages.map(msg => ({
-          ...msg,
-          timestamp: Timestamp.fromDate(msg.timestamp)
+          messageId: msg.messageId || '',
+          content: msg.content || '',
+          role: msg.role || 'user',
+          modelProvider: msg.modelProvider || 'gemini',
+          timestamp: Timestamp.fromDate(msg.timestamp || new Date()),
+          importance: msg.importance || 0.5
         })),
-        windowSize: memory.windowSize,
-        createdAt: Timestamp.fromDate(memory.createdAt),
-        updatedAt: Timestamp.fromDate(memory.updatedAt)
+        windowSize: memory.windowSize || this.DEFAULT_WINDOW_SIZE,
+        createdAt: Timestamp.fromDate(memory.createdAt || new Date()),
+        updatedAt: Timestamp.fromDate(memory.updatedAt || new Date())
       });
       
     } catch (error) {
