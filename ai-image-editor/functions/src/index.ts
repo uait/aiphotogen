@@ -9,7 +9,6 @@ admin.initializeApp();
 const corsHandler = cors({ origin: true });
 
 // Import function modules
-import { generateImage } from './generate-image';
 import { subscriptionCheckout } from './subscription-checkout';
 import { subscriptionPortal } from './subscription-portal';
 import { subscriptionUsage } from './subscription-usage';

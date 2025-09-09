@@ -42,12 +42,12 @@ admin.initializeApp();
 // Configure CORS
 const corsHandler = cors({ origin: true });
 // Import function modules
-const generate_image_1 = require("./generate-image");
 const subscription_checkout_1 = require("./subscription-checkout");
 const subscription_portal_1 = require("./subscription-portal");
 const subscription_usage_1 = require("./subscription-usage");
 const subscription_webhook_1 = require("./subscription-webhook");
 const memory_api_1 = require("./memory-api");
+const memory_enhanced_generate_1 = require("./memory-enhanced-generate");
 // Export HTTP functions
 exports.api = functions.https.onRequest((request, response) => {
     return corsHandler(request, response, async () => {
@@ -60,8 +60,8 @@ exports.api = functions.https.onRequest((request, response) => {
             // Route requests to appropriate handlers
             // Handle both /api/route and /route paths
             if (path === '/generate-image' || path === '/api/generate-image' || path.startsWith('/generate-image') || path.startsWith('/api/generate-image')) {
-                console.log('🎯 Routing to generateImage');
-                return await (0, generate_image_1.generateImage)(request, response);
+                console.log('🎯 Routing to memoryEnhancedGenerate');
+                return await (0, memory_enhanced_generate_1.memoryEnhancedGenerate)(request, response);
             }
             else if (path === '/subscription/checkout' || path === '/api/subscription/checkout' || path.startsWith('/subscription/checkout') || path.startsWith('/api/subscription/checkout')) {
                 console.log('🎯 Routing to subscriptionCheckout');
