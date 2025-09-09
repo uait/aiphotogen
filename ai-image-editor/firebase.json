@@ -43,6 +43,9 @@
           }
         ]
       }
+    ],
+    "predeploy": [
+      "STATIC_EXPORT=true npm run build"
     ]
   }
 }
