@@ -45,7 +45,7 @@
       }
     ],
     "predeploy": [
-      "npm run build:export"
+      "npm run build"
     ]
   }
 }
