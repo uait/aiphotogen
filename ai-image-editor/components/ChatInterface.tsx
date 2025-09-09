@@ -10,6 +10,8 @@ import { db, storage } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { MemoryManagementService } from '@/lib/services/MemoryManagementService';
+import { Message as MemoryMessage, ConversationMetadata } from '@/lib/types/memory';
 
 interface Message {
   id: string;
@@ -40,6 +42,9 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Memory management service
+  const memoryService = MemoryManagementService.getInstance();
 
   // Auto-resize textarea
   useEffect(() => {
@@ -144,6 +149,58 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
     return () => unsubscribe();
   }, [user, conversationId, activeTab]);
 
+  // Finalize conversation when switching conversations or unmounting
+  useEffect(() => {
+    const finalizeCurrentConversation = async () => {
+      if (!user || !conversationId || messages.length === 0) return;
+      
+      try {
+        const memoryMessages: MemoryMessage[] = messages.map(msg => ({
+          id: msg.id,
+          conversationId: conversationId,
+          userId: user.uid,
+          content: msg.text || (msg.generatedImage ? 'Generated image' : ''),
+          role: msg.isUser ? 'user' : 'assistant',
+          timestamp: new Date(msg.timestamp),
+          metadata: {
+            hasImages: (msg.images?.length || 0) > 0,
+            imageUrls: msg.images,
+            isImageGeneration: !!msg.generatedImage,
+            imageUrl: msg.generatedImage
+          }
+        }));
+
+        const conversationMetadata: ConversationMetadata = {
+          conversationId: conversationId,
+          userId: user.uid,
+          title: messages[0]?.text?.length > 50 
+            ? messages[0].text.substring(0, 50) + '...' 
+            : messages[0]?.text || 'Untitled Conversation',
+          messageCount: messages.length,
+          lastActivity: new Date(),
+          tags: [activeTab, messages.some(m => m.generatedImage) ? 'image-generation' : 'text-chat'],
+          satisfactionRating: undefined
+        };
+
+        await memoryService.finalizeConversation(
+          conversationId,
+          user.uid,
+          memoryMessages,
+          conversationMetadata
+        );
+      } catch (error) {
+        console.warn('Failed to finalize conversation:', error);
+      }
+    };
+
+    // Cleanup function to finalize conversation
+    return () => {
+      if (conversationId && messages.length > 0) {
+        finalizeCurrentConversation();
+      }
+    };
+  }, [conversationId, user, messages.length]); // Only run when conversation changes
+
   // Handle tab switching - clear incompatible conversations
   useEffect(() => {
     if (!conversationId) return;
@@ -164,6 +221,54 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
     const storageRef = ref(storage, `images/${user?.uid}/${Date.now()}_${file.name}`);
     const snapshot = await uploadBytes(storageRef, file);
     return getDownloadURL(snapshot.ref);
+  };
+
+  const showUpgradePrompt = (currentPlan: any) => {
+    const nextResetTime = new Date();
+    nextResetTime.setHours(24, 0, 0, 0); // Next midnight
+    const timeUntilReset = Math.ceil((nextResetTime.getTime() - Date.now()) / (1000 * 60 * 60)); // Hours until reset
+    
+    toast((t) => (
+      <div className="flex flex-col gap-3 p-2">
+        <div className="flex items-center gap-2">
+          <Sparkles size={20} className="text-[#00D4FF]" />
+          <span className="font-semibold text-white">Daily Limit Reached</span>
+        </div>
+        <p className="text-gray-300 text-sm">
+          You've used all {currentPlan.dailyLimit} generations for today on the {currentPlan.displayName} plan.
+        </p>
+        <p className="text-gray-400 text-xs">
+          Your usage resets in {timeUntilReset} hour{timeUntilReset !== 1 ? 's' : ''} (midnight ET).
+        </p>
+        <div className="flex gap-2 pt-2">
+          <button
+            onClick={() => {
+              window.open('/pricing', '_blank');
+              toast.dismiss(t.id);
+            }}
+            className="px-3 py-1.5 text-xs pixtor-gradient text-white rounded-md pixtor-gradient-hover transition-all duration-300 pixtor-glow"
+          >
+            Upgrade Plan
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="px-3 py-1.5 text-xs bg-gray-600 text-white rounded-md hover:bg-gray-500 transition-colors"
+          >
+            Wait for Reset
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: 10000,
+      position: 'top-center',
+      style: {
+        background: '#1f2937',
+        color: '#ffffff',
+        borderRadius: '12px',
+        border: '1px solid #374151',
+        maxWidth: '400px',
+      },
+    });
   };
 
   const handleSend = async () => {
@@ -204,8 +309,9 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
     setMessages(prev => [...prev, userMsg]);
 
     // Add loading message with original images for blur effect
+    const loadingId = `loading_${Date.now()}`;
     const loadingMsg: Message = {
-      id: `loading_${Date.now()}`,
+      id: loadingId,
       isUser: false,
       timestamp: new Date(),
       isLoading: true,
@@ -232,6 +338,42 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
         timestamp: serverTimestamp(),
       });
 
+      // Check usage limits before making API call
+      try {
+        const token = await user.getIdToken();
+        const usageResponse = await fetch('/api/subscription/usage', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (usageResponse.ok) {
+          const usageData = await usageResponse.json();
+          if (usageData.today.remaining <= 0) {
+            // User has exceeded daily limit
+            setIsGenerating(false);
+            setMessages(prev => prev.filter(msg => msg.id !== loadingId));
+            
+            toast.error('Daily usage limit exceeded!', {
+              duration: 6000,
+              position: 'top-center',
+              style: {
+                background: '#1f2937',
+                color: '#ffffff',
+                borderRadius: '8px',
+                border: '1px solid #374151',
+              },
+            });
+            
+            // Show upgrade prompt
+            showUpgradePrompt(usageData.plan);
+            return;
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to check usage limits, proceeding with request:', error);
+      }
+
       // Call API - use JSON for text-only, FormData for file uploads
       let requestBody: FormData | string;
       let requestHeaders: HeadersInit = {};
@@ -247,31 +389,65 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
         requestBody = formData;
         // Let browser set Content-Type for FormData
       } else {
-        // Use JSON for text-only requests
-        // For text chat, include conversation history for context
-        let conversationHistory: any[] = [];
+        // Use JSON for text-only requests with memory context
+        let memoryContext = null;
         
-        if (activeTab === 'chat' && conversationId) {
-          // Convert current messages to Gemini conversation format
-          conversationHistory = messages
-            .filter(msg => !msg.isLoading) // Exclude loading messages
-            .map(msg => ({
-              role: msg.isUser ? 'user' : 'model',
-              parts: [{ text: msg.text || '' }]
-            }));
+        if (activeTab === 'chat' && user && conversationId) {
+          try {
+            // Generate comprehensive conversation context using memory management
+            memoryContext = await memoryService.generateConversationContext(
+              conversationId,
+              user.uid,
+              userMessage,
+              8000 // Max tokens for context
+            );
+            
+            console.log('Generated memory context with', memoryContext.totalTokenCount, 'tokens');
+          } catch (error) {
+            console.warn('Failed to generate memory context, falling back to basic history:', error);
+            
+            // Fallback to basic conversation history
+            memoryContext = {
+              shortTermMemory: {
+                messages: messages
+                  .filter(msg => !msg.isLoading)
+                  .map(msg => ({
+                    id: msg.id,
+                    content: msg.text || '',
+                    role: msg.isUser ? 'user' : 'assistant',
+                    timestamp: new Date(msg.timestamp)
+                  }))
+              },
+              relevantSemanticMemories: [],
+              relevantEpisodicMemories: [],
+              recommendedModel: 'gemini-2.0-flash-exp'
+            };
+          }
         }
         
         requestBody = JSON.stringify({
           prompt: userMessage || '',
           mode: activeTab,
-          conversationHistory: conversationHistory
+          memoryContext: memoryContext,
+          // Keep legacy support for backward compatibility
+          conversationHistory: memoryContext?.shortTermMemory?.messages?.map(msg => ({
+            role: msg.role === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.content || '' }]
+          })) || []
         });
         requestHeaders = {
           'Content-Type': 'application/json'
         };
       }
 
-      const response = await fetch('/api/generate-image', {
+      // Add authentication header
+      const token = await user.getIdToken();
+      requestHeaders = {
+        ...requestHeaders,
+        'Authorization': `Bearer ${token}`
+      };
+
+      const response = await fetch('/api/generate-image-v2', {
         method: 'POST',
         headers: requestHeaders,
         body: requestBody,
@@ -289,7 +465,44 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
       const result = await response.json();
       
       if (!response.ok) {
-        // Throw error with response data for proper error handling
+        // Handle usage limit errors specifically
+        if (response.status === 429 && result.errorType === 'USAGE_LIMIT_EXCEEDED') {
+          setIsGenerating(false);
+          // Remove loading message
+          setMessages(prev => prev.filter(msg => msg.id !== loadingId));
+          
+          toast.error('Daily usage limit exceeded!', {
+            duration: 6000,
+            position: 'top-center',
+            style: {
+              background: '#1f2937',
+              color: '#ffffff',
+              borderRadius: '8px',
+              border: '1px solid #374151',
+            },
+          });
+          
+          showUpgradePrompt(result.plan);
+          return;
+        }
+        
+        // Handle feature gate errors
+        if (response.status === 403 && result.errorType === 'FEATURE_GATE_BLOCKED') {
+          setIsGenerating(false);
+          setMessages(prev => prev.filter(msg => msg.id !== loadingId));
+          
+          toast.error(result.error || 'Feature not available in current plan', {
+            duration: 6000,
+            position: 'top-center',
+          });
+          
+          if (result.suggestedPlan) {
+            showUpgradePrompt({ displayName: result.suggestedPlan.displayName, dailyLimit: result.suggestedPlan.dailyLimit });
+          }
+          return;
+        }
+        
+        // Throw error with response data for other errors
         const error: any = new Error(result.error || 'Failed to process request');
         error.response = { data: result };
         throw error;
@@ -341,6 +554,56 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
       }
 
       await addDoc(collection(db, 'messages'), aiMessageData);
+
+      // Process messages through memory management system
+      try {
+        if (user) {
+          // Create memory messages from the conversation
+          const userMemoryMessage: MemoryMessage = {
+            id: tempId,
+            conversationId: currentConvId,
+            userId: user.uid,
+            content: userMessage,
+            role: 'user',
+            timestamp: new Date(),
+            metadata: {
+              hasImages: images.length > 0,
+              imageUrls: uploadedUrls
+            }
+          };
+          
+          const aiMemoryMessage: MemoryMessage = {
+            id: `ai_${Date.now()}`,
+            conversationId: currentConvId,
+            userId: user.uid,
+            content: result.text || 'Generated image',
+            role: 'assistant',
+            timestamp: new Date(),
+            metadata: {
+              isImageGeneration: result.isImageGeneration,
+              imageUrl: result.isImageGeneration ? result.imageUrl : undefined,
+              modelUsed: result.modelUsed
+            }
+          };
+
+          const conversationMetadata: ConversationMetadata = {
+            conversationId: currentConvId,
+            userId: user.uid,
+            title: userMessage.length > 50 ? userMessage.substring(0, 50) + '...' : userMessage,
+            messageCount: messages.length + 2, // +2 for user and AI messages
+            lastActivity: new Date(),
+            tags: [conversationType, activeTab],
+            satisfactionRating: undefined // Will be set later if user provides feedback
+          };
+
+          // Process both messages through memory system
+          await memoryService.processMessage(userMemoryMessage, conversationMetadata);
+          await memoryService.processMessage(aiMemoryMessage, conversationMetadata);
+        }
+      } catch (memoryError) {
+        console.warn('Failed to process messages through memory system:', memoryError);
+        // Continue with UI updates even if memory processing fails
+      }
 
       // Transform loading message to show result with morphing animation
       let displayImageUrl = undefined;
@@ -1067,6 +1330,7 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
               {/* Text Input */}
               <textarea
                 ref={textareaRef}
+                data-testid="chat-input"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -1083,6 +1347,7 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
 
               {/* Send Button */}
               <button
+                data-testid="send-button"
                 onClick={handleSend}
                 disabled={isGenerating || (!input.trim() && uploadedImages.length === 0)}
                 className="p-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"

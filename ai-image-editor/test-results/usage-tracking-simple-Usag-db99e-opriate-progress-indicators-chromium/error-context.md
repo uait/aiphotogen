@@ -1,0 +1,97 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - button "New Chat" [ref=e5]:
+          - img [ref=e6]
+          - generic [ref=e7]: New Chat
+        - generic [ref=e8]:
+          - generic [ref=e9]:
+            - img [ref=e10]
+            - generic [ref=e12]: Today's Usage
+          - generic [ref=e13]:
+            - generic [ref=e14]: 0 / 50
+            - generic [ref=e15]: 50 left
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - heading "Text Chats" [level=3] [ref=e19]:
+            - img [ref=e20]
+            - generic [ref=e22]: Text Chats
+          - generic [ref=e23]:
+            - generic [ref=e25] [cursor=pointer]:
+              - generic [ref=e26] [cursor=pointer]:
+                - generic [ref=e27] [cursor=pointer]:
+                  - img [ref=e28] [cursor=pointer]
+                  - heading "Hello, test message" [level=4] [ref=e30] [cursor=pointer]
+                - paragraph [ref=e31] [cursor=pointer]: Hello, test message
+              - button [ref=e32]:
+                - img [ref=e33]
+            - generic [ref=e37] [cursor=pointer]:
+              - generic [ref=e38] [cursor=pointer]:
+                - generic [ref=e39] [cursor=pointer]:
+                  - img [ref=e40] [cursor=pointer]
+                  - heading "This should be blocked" [level=4] [ref=e42] [cursor=pointer]
+                - paragraph [ref=e43] [cursor=pointer]: This should be blocked
+              - button [ref=e44]:
+                - img [ref=e45]
+        - generic [ref=e48]:
+          - heading "Image Chats" [level=3] [ref=e49]:
+            - img [ref=e50]
+            - generic [ref=e54]: Image Chats
+          - paragraph [ref=e55]: No image conversations yet
+      - generic [ref=e56]:
+        - generic [ref=e57]:
+          - generic [ref=e58]: A
+          - paragraph [ref=e60]: ashraf1190+testaccount@gmail.com
+        - button "Logout" [ref=e61]:
+          - img [ref=e62]
+          - generic [ref=e65]: Logout
+    - generic [ref=e66]:
+      - banner [ref=e67]:
+        - generic [ref=e68]:
+          - link "PixtorAI Logo PixtorAI" [ref=e69] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e70] [cursor=pointer]:
+              - img "PixtorAI Logo" [ref=e72] [cursor=pointer]
+              - generic [ref=e73] [cursor=pointer]: PixtorAI
+          - generic [ref=e74]:
+            - link "Pricing" [ref=e75] [cursor=pointer]:
+              - /url: /pricing/
+            - link "Account" [ref=e76] [cursor=pointer]:
+              - /url: /account/
+              - img [ref=e77] [cursor=pointer]
+              - generic [ref=e80] [cursor=pointer]: Account
+      - main [ref=e81]:
+        - generic [ref=e82]:
+          - generic [ref=e85]:
+            - button "Chat" [ref=e86]:
+              - generic [ref=e87]:
+                - img [ref=e88]
+                - generic [ref=e90]: Chat
+            - button "Photo" [ref=e91]:
+              - generic [ref=e92]:
+                - img [ref=e93]
+                - generic [ref=e97]: Photo
+          - generic [ref=e99]:
+            - img [ref=e101]
+            - heading "Start a Conversation" [level=3] [ref=e103]
+            - paragraph [ref=e104]: Ask me anything or describe an image you want to create. I can help with questions, creative ideas, and more!
+          - generic [ref=e105]:
+            - generic [ref=e107]:
+              - generic [ref=e108]:
+                - generic [ref=e110]: "Active Model:"
+                - generic [ref=e111]: Gemini 2.0 Flash (Chat)
+              - generic [ref=e112]: Text mode
+            - generic [ref=e115]:
+              - button "Upload images" [ref=e116]:
+                - img [ref=e117]
+              - textbox "Type a message or ask me to create something amazing..." [ref=e121]
+              - button [disabled] [ref=e122]:
+                - img [ref=e123]
+  - button "Open Next.js Dev Tools" [ref=e131] [cursor=pointer]:
+    - img [ref=e132] [cursor=pointer]
+  - alert [ref=e135]
+```
