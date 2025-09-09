@@ -45,7 +45,7 @@
       }
     ],
     "predeploy": [
-      "STATIC_EXPORT=true npm run build"
+      "npm run build:export"
     ]
   }
 }
