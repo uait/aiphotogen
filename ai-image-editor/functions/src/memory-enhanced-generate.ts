@@ -2,6 +2,7 @@
 // Integrates conversation memory for continuous context across model calls
 
 import * as admin from 'firebase-admin';
+import * as functions from 'firebase-functions';
 import { Request, Response } from 'firebase-functions';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 const busboy = require('busboy');
@@ -315,7 +316,7 @@ export const memoryEnhancedGenerate = async (request: EnhancedRequest, response:
     console.log(`Built contextual prompt with ${contextualPrompt.length} characters`);
 
     // Initialize Gemini client
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = functions.config().gemini.api_key;
     if (!apiKey) {
       throw new Error('GEMINI_API_KEY not configured');
     }

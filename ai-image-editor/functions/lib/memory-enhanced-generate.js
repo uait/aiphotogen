@@ -37,6 +37,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.memoryEnhancedGenerate = void 0;
 const admin = __importStar(require("firebase-admin"));
+const functions = __importStar(require("firebase-functions"));
 const generative_ai_1 = require("@google/generative-ai");
 const busboy = require('busboy');
 // Authentication helper
@@ -295,7 +296,7 @@ const memoryEnhancedGenerate = async (request, response) => {
         const contextualPrompt = buildContextualPrompt(memoryContext, prompt, mode);
         console.log(`Built contextual prompt with ${contextualPrompt.length} characters`);
         // Initialize Gemini client
-        const apiKey = process.env.GEMINI_API_KEY;
+        const apiKey = functions.config().gemini.api_key;
         if (!apiKey) {
             throw new Error('GEMINI_API_KEY not configured');
         }
