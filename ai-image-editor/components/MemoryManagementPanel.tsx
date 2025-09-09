@@ -1,12 +1,31 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Trash2, Download, Eye, Shield, Brain, Clock, BarChart3, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 interface MemoryManagementPanelProps {
   onClose?: () => void;
+}
+
+interface MemoryStats {
+  totalMemories: number;
+  storageMB: number;
+  effectivenessPercent: number;
+  monthlyActivity: {
+    created: number;
+    retrieved: number;
+    summarized: number;
+  };
+}
+
+interface MemorySearchResult {
+  id: string;
+  type: 'semantic' | 'episodic';
+  content: string;
+  createdAt: string;
+  score: number;
 }
 
 export function MemoryManagementPanel({ onClose }: MemoryManagementPanelProps) {
@@ -18,39 +37,212 @@ export function MemoryManagementPanel({ onClose }: MemoryManagementPanelProps) {
   const [episodicEnabled, setEpisodicEnabled] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showConfirmClear, setShowConfirmClear] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState<MemoryStats | null>(null);
+  const [searchResults, setSearchResults] = useState<MemorySearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
 
-  const handleToggleMemory = (type: string, value: boolean) => {
-    switch (type) {
-      case 'memory':
-        setMemoryEnabled(value);
-        toast.success(`Memory ${value ? 'enabled' : 'disabled'}`);
-        break;
-      case 'shortTerm':
-        setShortTermEnabled(value);
-        toast.success(`Short-term memory ${value ? 'enabled' : 'disabled'}`);
-        break;
-      case 'longTerm':
-        setLongTermEnabled(value);
-        toast.success(`Long-term learning ${value ? 'enabled' : 'disabled'}`);
-        break;
-      case 'episodic':
-        setEpisodicEnabled(value);
-        toast.success(`Episode memories ${value ? 'enabled' : 'disabled'}`);
-        break;
+  // Load memory stats on component mount
+  useEffect(() => {
+    if (user && activeTab === 'overview') {
+      loadMemoryStats();
+    }
+  }, [user, activeTab]);
+
+  // Load memory settings on component mount
+  useEffect(() => {
+    if (user) {
+      loadMemorySettings();
+    }
+  }, [user]);
+
+  const apiCall = async (endpoint: string, options: RequestInit = {}) => {
+    if (!user) throw new Error('User not authenticated');
+    
+    const token = await user.getIdToken();
+    const response = await fetch(`/api/memory/${endpoint}`, {
+      ...options,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'API request failed');
+    }
+
+    return response.json();
+  };
+
+  const loadMemoryStats = async () => {
+    try {
+      setLoading(true);
+      const data = await apiCall('stats');
+      setStats(data);
+    } catch (error) {
+      console.error('Failed to load memory stats:', error);
+      toast.error('Failed to load memory statistics');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleClearMemories = () => {
+  const loadMemorySettings = async () => {
+    try {
+      // Settings are loaded from the toggle API when we call it
+      // For now, we'll use defaults and they'll be updated when user interacts
+    } catch (error) {
+      console.error('Failed to load memory settings:', error);
+    }
+  };
+
+  const handleToggleMemory = async (type: string, value: boolean) => {
+    try {
+      const requestBody: any = {};
+      
+      switch (type) {
+        case 'memory':
+          requestBody.master = value;
+          setMemoryEnabled(value);
+          break;
+        case 'shortTerm':
+          requestBody.shortTerm = value;
+          setShortTermEnabled(value);
+          break;
+        case 'longTerm':
+          requestBody.longTerm = value;
+          setLongTermEnabled(value);
+          break;
+        case 'episodic':
+          requestBody.episodic = value;
+          setEpisodicEnabled(value);
+          break;
+      }
+
+      const response = await apiCall('toggle', {
+        method: 'POST',
+        body: JSON.stringify(requestBody),
+      });
+
+      // Update all states from server response
+      setMemoryEnabled(response.memoryEnabled);
+      setShortTermEnabled(response.shortTermMemoryEnabled);
+      setLongTermEnabled(response.semanticMemoryEnabled);
+      setEpisodicEnabled(response.episodicMemoryEnabled);
+
+      const typeLabels: Record<string, string> = {
+        memory: 'Memory',
+        shortTerm: 'Short-term memory',
+        longTerm: 'Long-term learning',
+        episodic: 'Episode memories'
+      };
+
+      toast.success(`${typeLabels[type]} ${value ? 'enabled' : 'disabled'}`);
+      
+    } catch (error) {
+      console.error('Failed to update memory setting:', error);
+      toast.error('Failed to update memory setting');
+      // Revert the optimistic update
+      switch (type) {
+        case 'memory':
+          setMemoryEnabled(!value);
+          break;
+        case 'shortTerm':
+          setShortTermEnabled(!value);
+          break;
+        case 'longTerm':
+          setLongTermEnabled(!value);
+          break;
+        case 'episodic':
+          setEpisodicEnabled(!value);
+          break;
+      }
+    }
+  };
+
+  const handleClearMemories = async () => {
     if (showConfirmClear) {
-      toast.success('All memories cleared successfully');
-      setShowConfirmClear(false);
+      try {
+        setLoading(true);
+        const response = await apiCall('clear', {
+          method: 'DELETE',
+          body: JSON.stringify({ confirmToken: 'CONFIRM_DELETE_ALL_MEMORIES' }),
+        });
+
+        toast.success(`Successfully cleared ${response.clearedCount} memories`);
+        setShowConfirmClear(false);
+        
+        // Refresh stats
+        if (activeTab === 'overview') {
+          await loadMemoryStats();
+        }
+        
+      } catch (error) {
+        console.error('Failed to clear memories:', error);
+        toast.error('Failed to clear memories');
+      } finally {
+        setLoading(false);
+      }
     } else {
       setShowConfirmClear(true);
     }
   };
 
-  const handleExportMemories = () => {
-    toast.success('Memory export initiated (feature coming soon)');
+  const handleExportMemories = async () => {
+    try {
+      setLoading(true);
+      const response = await apiCall('export', {
+        method: 'POST',
+      });
+
+      // Create and download file
+      const blob = new Blob([JSON.stringify(response.data, null, 2)], {
+        type: 'application/json',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = response.downloadFilename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success('Memory export downloaded successfully');
+      
+    } catch (error) {
+      console.error('Failed to export memories:', error);
+      toast.error('Failed to export memories');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      toast.error('Please enter a search query');
+      return;
+    }
+
+    try {
+      setSearching(true);
+      const response = await apiCall(`search?q=${encodeURIComponent(searchQuery)}&limit=10`);
+      setSearchResults(response.results || []);
+      
+      if (response.results.length === 0) {
+        toast.info('No memories found matching your search');
+      }
+      
+    } catch (error) {
+      console.error('Failed to search memories:', error);
+      toast.error('Failed to search memories');
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
   };
 
   const TabButton = ({ id, label, icon: Icon }: { id: string; label: string; icon: any }) => (
@@ -118,49 +310,57 @@ export function MemoryManagementPanel({ onClose }: MemoryManagementPanelProps) {
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-white">Memory Statistics</h3>
             
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gray-800/50 rounded-lg p-4">
-                <div className="text-sm text-gray-400 mb-1">Total Memories</div>
-                <div className="text-2xl font-bold text-white">247</div>
-                <div className="text-xs text-gray-400">156 semantic, 91 episodic</div>
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin w-6 h-6 border-2 border-[#00D4FF] border-t-transparent rounded-full"></div>
               </div>
-              
-              <div className="bg-gray-800/50 rounded-lg p-4">
-                <div className="text-sm text-gray-400 mb-1">Storage Used</div>
-                <div className="text-2xl font-bold text-white">12.3 MB</div>
-                <div className="text-xs text-gray-400">Including embeddings</div>
-              </div>
-              
-              <div className="bg-gray-800/50 rounded-lg p-4">
-                <div className="text-sm text-gray-400 mb-1">Effectiveness</div>
-                <div className="text-2xl font-bold text-[#00D4FF]">Excellent</div>
-                <div className="text-xs text-gray-400">87% efficiency score</div>
-              </div>
-            </div>
+            ) : (
+              <>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-gray-800/50 rounded-lg p-4">
+                    <div className="text-sm text-gray-400 mb-1">Total Memories</div>
+                    <div className="text-2xl font-bold text-white">{stats?.totalMemories || 0}</div>
+                    <div className="text-xs text-gray-400">Long-term & episodes</div>
+                  </div>
+                  
+                  <div className="bg-gray-800/50 rounded-lg p-4">
+                    <div className="text-sm text-gray-400 mb-1">Storage Used</div>
+                    <div className="text-2xl font-bold text-white">{stats?.storageMB.toFixed(1) || '0.0'} MB</div>
+                    <div className="text-xs text-gray-400">Including embeddings</div>
+                  </div>
+                  
+                  <div className="bg-gray-800/50 rounded-lg p-4">
+                    <div className="text-sm text-gray-400 mb-1">Effectiveness</div>
+                    <div className="text-2xl font-bold text-[#00D4FF]">
+                      {stats?.effectivenessPercent >= 80 ? 'Excellent' : 
+                       stats?.effectivenessPercent >= 60 ? 'Good' : 
+                       stats?.effectivenessPercent >= 40 ? 'Fair' : 'Needs Improvement'}
+                    </div>
+                    <div className="text-xs text-gray-400">{stats?.effectivenessPercent || 0}% efficiency score</div>
+                  </div>
+                </div>
 
-            {/* Recent Activity */}
-            <div>
-              <h4 className="text-white font-medium mb-3">This Month's Activity</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="text-lg font-bold text-blue-400">43</div>
-                  <div className="text-xs text-gray-400">Memories Created</div>
+                {/* Recent Activity */}
+                <div>
+                  <h4 className="text-white font-medium mb-3">This Month's Activity</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-blue-400">{stats?.monthlyActivity.created || 0}</div>
+                      <div className="text-xs text-gray-400">Memories Created</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-green-400">{stats?.monthlyActivity.retrieved || 0}</div>
+                      <div className="text-xs text-gray-400">Memories Accessed</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-purple-400">{stats?.monthlyActivity.summarized || 0}</div>
+                      <div className="text-xs text-gray-400">Episodes Summarized</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-green-400">127</div>
-                  <div className="text-xs text-gray-400">Memories Accessed</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-purple-400">18</div>
-                  <div className="text-xs text-gray-400">Conversations</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-orange-400">23ms</div>
-                  <div className="text-xs text-gray-400">Avg Retrieval</div>
-                </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         )}
 
@@ -233,15 +433,49 @@ export function MemoryManagementPanel({ onClose }: MemoryManagementPanelProps) {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-[#00D4FF] focus:outline-none"
                 />
-                <button className="px-4 py-2 bg-[#00D4FF] text-white rounded-lg hover:bg-[#00B8E6] transition-colors">
-                  Search
+                <button 
+                  onClick={handleSearch}
+                  disabled={searching}
+                  className="px-4 py-2 bg-[#00D4FF] text-white rounded-lg hover:bg-[#00B8E6] transition-colors disabled:opacity-50"
+                >
+                  {searching ? 'Searching...' : 'Search'}
                 </button>
               </div>
 
               {searchQuery && (
                 <div className="bg-gray-800/50 rounded-lg p-4">
                   <div className="text-gray-400 text-sm mb-2">Search results for "{searchQuery}"</div>
-                  <div className="text-gray-300">No memories found matching your search.</div>
+                  {searching ? (
+                    <div className="flex items-center justify-center py-4">
+                      <div className="animate-spin w-4 h-4 border-2 border-[#00D4FF] border-t-transparent rounded-full"></div>
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <div className="space-y-3">
+                      {searchResults.map((result) => (
+                        <div key={result.id} className="bg-gray-700/50 rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-[#00D4FF] font-medium uppercase">
+                              {result.type === 'semantic' ? 'Known Fact' : 'Episode Summary'}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {new Date(result.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div className="text-gray-300 text-sm">
+                            {result.content.length > 200 
+                              ? `${result.content.substring(0, 200)}...` 
+                              : result.content
+                            }
+                          </div>
+                          <div className="mt-2 text-xs text-gray-400">
+                            Relevance: {Math.round(result.score * 100)}%
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-gray-300">No memories found matching your search.</div>
+                  )}
                 </div>
               )}
             </div>

@@ -63,6 +63,10 @@ exports.api = functions.https.onRequest((request, response) => {
                 console.log('🎯 Routing to memoryEnhancedGenerate');
                 return await (0, memory_enhanced_generate_1.memoryEnhancedGenerate)(request, response);
             }
+            else if (path === '/generate-image-v2' || path === '/api/generate-image-v2' || path.startsWith('/generate-image-v2') || path.startsWith('/api/generate-image-v2')) {
+                console.log('🎯 Routing to memoryEnhancedGenerate (v2)');
+                return await (0, memory_enhanced_generate_1.memoryEnhancedGenerate)(request, response);
+            }
             else if (path === '/subscription/checkout' || path === '/api/subscription/checkout' || path.startsWith('/subscription/checkout') || path.startsWith('/api/subscription/checkout')) {
                 console.log('🎯 Routing to subscriptionCheckout');
                 return await (0, subscription_checkout_1.subscriptionCheckout)(request, response);
@@ -109,7 +113,7 @@ exports.api = functions.https.onRequest((request, response) => {
                     error: 'Function not found',
                     path: path,
                     method: method,
-                    availableRoutes: ['/api/generate-image', '/api/subscription/checkout', '/api/subscription/portal', '/api/subscription/usage', '/api/subscription/webhook', '/api/memory/stats', '/api/memory/search', '/api/memory/toggle', '/api/memory/export', '/api/memory/clear', '/api/memory/context']
+                    availableRoutes: ['/api/generate-image', '/api/generate-image-v2', '/api/subscription/checkout', '/api/subscription/portal', '/api/subscription/usage', '/api/subscription/webhook', '/api/memory/stats', '/api/memory/search', '/api/memory/toggle', '/api/memory/export', '/api/memory/clear', '/api/memory/context']
                 });
             }
         }
