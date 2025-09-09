@@ -35,29 +35,26 @@ body {
   color: var(--pixtor-text-light);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   height: 100%;
-  overflow: hidden; /* Prevent body scrolling on mobile */
 }
 
-/* Mobile-specific fixes */
+/* Mobile-specific fixes for chat app only */
+.mobile-viewport-fix {
+  height: 100vh;
+  height: 100dvh;
+  height: -webkit-fill-available;
+}
+
 @media (max-width: 1024px) {
-  html {
-    height: 100vh;
-    height: 100dvh; /* Use dynamic viewport height on mobile */
-  }
-  
-  body {
-    height: 100vh;
-    height: 100dvh;
+  /* Only apply mobile fixes to chat app containers */
+  .mobile-viewport-fix {
     position: fixed;
     width: 100%;
     overflow: hidden;
   }
   
-  /* Fix for mobile keyboard appearing */
-  .mobile-viewport-fix {
-    height: 100vh;
-    height: 100dvh;
-    height: -webkit-fill-available;
+  /* Keep body scrollable for landing page */
+  body:has(.mobile-viewport-fix) {
+    overflow: hidden;
   }
 }
 

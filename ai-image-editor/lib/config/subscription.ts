@@ -83,7 +83,9 @@ export const PLANS: Plan[] = [
     allowedTiers: [ModelTier.LITE],
     features: PLAN_FEATURES.free,
     isActive: true,
-    sortOrder: 1
+    sortOrder: 1,
+    stripeProductId: 'prod_Sz6U0GoK6Wakcr',  // Your Free product ID
+    stripePriceId: 'price_free_monthly'
   },
   {
     id: 'starter',
@@ -96,7 +98,9 @@ export const PLANS: Plan[] = [
     allowedTiers: [ModelTier.LITE],
     features: PLAN_FEATURES.starter,
     isActive: true,
-    sortOrder: 2
+    sortOrder: 2,
+    stripeProductId: 'prod_Sz6Y6GsyV8daoW',  // Your Starter product ID
+    stripePriceId: 'price_starter_monthly'
   },
   {
     id: 'creator',
@@ -109,7 +113,9 @@ export const PLANS: Plan[] = [
     allowedTiers: [ModelTier.LITE, ModelTier.SECONDARY],
     features: PLAN_FEATURES.creator,
     isActive: true,
-    sortOrder: 3
+    sortOrder: 3,
+    stripeProductId: 'prod_Sz6bRHJxuQ03zH',  // Your Creator product ID
+    stripePriceId: 'price_creator_monthly'
   },
   {
     id: 'pro',
@@ -122,7 +128,9 @@ export const PLANS: Plan[] = [
     allowedTiers: [ModelTier.LITE, ModelTier.SECONDARY, ModelTier.PREMIUM],
     features: PLAN_FEATURES.pro,
     isActive: true,
-    sortOrder: 4
+    sortOrder: 4,
+    stripeProductId: 'prod_Sz6cM7fIGkMm2I',
+    stripePriceId: 'price_pro_monthly'
   }
 ];
 
