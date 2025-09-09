@@ -5,6 +5,8 @@ import { SubscriptionService } from '@/lib/services/subscription';
 import { OperationType, ModelTier } from '@/lib/types/subscription';
 import { getModelConfigByTier, getHighestAllowedTierForPlan } from '@/lib/config/subscription';
 
+export const dynamic = 'force-dynamic';
+
 // Initialize Firebase Admin if not already done
 if (!process.env.FIREBASE_ADMIN_INITIALIZED) {
   const { initializeApp, getApps, cert } = require('firebase-admin/app');
@@ -86,16 +88,30 @@ export async function POST(request: NextRequest) {
   let modelId = 'gemini-2.5-flash-image-preview';
 
   try {
-    // Parse request data
-    const formData = await request.formData();
-    const prompt = formData.get('prompt') as string;
-    const images: File[] = [];
+    // Parse request data - handle both FormData (for images) and JSON (for text with memory context)
+    const contentType = request.headers.get('content-type') || '';
+    let prompt = '';
+    let images: File[] = [];
+    let memoryContext: any = null;
+    let conversationHistory: any[] = [];
     
-    for (let i = 0; i < 2; i++) {
-      const image = formData.get(`image_${i}`) as File;
-      if (image) {
-        images.push(image);
+    if (contentType.includes('multipart/form-data')) {
+      // Handle FormData for image uploads
+      const formData = await request.formData();
+      prompt = formData.get('prompt') as string || '';
+      
+      for (let i = 0; i < 2; i++) {
+        const image = formData.get(`image_${i}`) as File;
+        if (image) {
+          images.push(image);
+        }
       }
+    } else if (contentType.includes('application/json')) {
+      // Handle JSON for text requests with memory context
+      const jsonData = await request.json();
+      prompt = jsonData.prompt || '';
+      memoryContext = jsonData.memoryContext;
+      conversationHistory = jsonData.conversationHistory || [];
     }
 
     if (!prompt && images.length === 0) {
@@ -360,12 +376,81 @@ export async function POST(request: NextRequest) {
       });
       
     } else {
-      // Use regular chat model for text-only conversations
+      // Use regular chat model for text-only conversations with memory context
       const model = genAI.getGenerativeModel({ 
         model: 'gemini-2.0-flash-exp'
       });
       
-      const result = await model.generateContent(prompt);
+      let contents: any[] = [];
+      
+      if (memoryContext && memoryContext.shortTermMemory?.messages?.length > 0) {
+        // Use memory context for richer conversation experience
+        console.log('Using memory context with', memoryContext.shortTermMemory.messages.length, 'messages');
+        
+        // Add relevant semantic memories as context if available
+        if (memoryContext.relevantSemanticMemories?.length > 0) {
+          const semanticContext = memoryContext.relevantSemanticMemories
+            .map((memory: any) => `User preference: ${memory.content}`)
+            .join('\n');
+          
+          contents.push({
+            role: 'user',
+            parts: [{ text: `Context from previous conversations:\n${semanticContext}` }]
+          });
+          
+          contents.push({
+            role: 'model',
+            parts: [{ text: 'I understand your preferences and will keep them in mind.' }]
+          });
+        }
+        
+        // Add episodic memories as context if available
+        if (memoryContext.relevantEpisodicMemories?.length > 0) {
+          const episodicContext = memoryContext.relevantEpisodicMemories
+            .map((memory: any) => `Previous conversation: ${memory.summary}`)
+            .join('\n');
+          
+          contents.push({
+            role: 'user',
+            parts: [{ text: `Related past conversations:\n${episodicContext}` }]
+          });
+          
+          contents.push({
+            role: 'model',
+            parts: [{ text: 'I recall our previous conversations and will provide contextually relevant responses.' }]
+          });
+        }
+        
+        // Add recent conversation history from short-term memory
+        for (const message of memoryContext.shortTermMemory.messages) {
+          contents.push({
+            role: message.role === 'user' ? 'user' : 'model',
+            parts: [{ text: message.content }]
+          });
+        }
+        
+        // Add current prompt
+        contents.push({
+          role: 'user',
+          parts: [{ text: prompt }]
+        });
+        
+        console.log('Generated conversation with', contents.length, 'parts including memory context');
+      } else if (conversationHistory.length > 0) {
+        // Fallback to basic conversation history
+        contents = [...conversationHistory, {
+          role: 'user',
+          parts: [{ text: prompt }]
+        }];
+      } else {
+        // Single prompt without context
+        contents = [{
+          role: 'user',
+          parts: [{ text: prompt }]
+        }];
+      }
+      
+      const result = await model.generateContent({ contents });
       const response = await result.response;
       const text = response.text();
       
