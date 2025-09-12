@@ -281,6 +281,12 @@ export const memoryEnhancedGenerate = async (request: EnhancedRequest, response:
       prompt = body.prompt || '';
       mode = body.mode || 'chat';
       conversationId = body.conversationId || `conv_${Date.now()}`;
+      // Keep any provided memory context / legacy history for downstream use
+      try {
+        (request as any)._providedMemoryContext = body.memoryContext || null;
+        (request as any)._legacyConversationHistory = body.conversationHistory || null;
+      } catch {}
+
       console.log(`JSON parsed - prompt: "${prompt.substring(0, 100)}...", mode: ${mode}`);
     } else if (contentType.includes('multipart/form-data')) {
       // Handle multipart requests (with file uploads)
@@ -326,7 +332,59 @@ export const memoryEnhancedGenerate = async (request: EnhancedRequest, response:
     console.log(`Processing prompt: "${prompt.substring(0, 100)}..." in ${mode} mode`);
 
     // Build memory context
-    const memoryContext = await buildMemoryContext(userId, conversationId, prompt);
+        // Build or adopt memory context
+    let memoryContext: MemoryContext | null = null;
+    const provided = (request as any)._providedMemoryContext as any;
+    const legacyHistory = (request as any)._legacyConversationHistory as any[] | null;
+
+    if (provided) {
+      try {
+        const systemPrompt = `You are Pixtorai, a helpful multi-turn AI assistant.`;
+        const knownFacts: string[] = Array.isArray(provided.relevantSemanticMemories)
+          ? provided.relevantSemanticMemories
+              .map((m: any) => m?.content)
+              .filter((c: any) => typeof c === 'string')
+          : [];
+        const conversationHistory: string[] = Array.isArray(provided.relevantEpisodicMemories)
+          ? provided.relevantEpisodicMemories
+              .map((e: any) => e?.summary)
+              .filter((s: any) => typeof s === 'string')
+          : [];
+        const recentMessages: Array<{ role: string; content: string }> = provided?.shortTermMemory?.messages?.map((msg: any) => ({
+          role: msg?.role === 'assistant' ? 'assistant' : 'user',
+          content: String(msg?.content || '')
+        })) || [];
+
+        memoryContext = { systemPrompt, knownFacts, conversationHistory, recentMessages };
+        console.log('Using client-provided memory context:', {
+          facts: knownFacts.length,
+          episodes: conversationHistory.length,
+          msgs: recentMessages.length
+        });
+      } catch (e) {
+        console.warn('Failed to adopt provided memory context, will rebuild:', e);
+        memoryContext = null;
+      }
+    }
+
+    if (!memoryContext && Array.isArray(legacyHistory) && legacyHistory.length > 0) {
+      try {
+        memoryContext = {
+          systemPrompt: `You are Pixtorai, a helpful multi-turn AI assistant.`,
+          knownFacts: [],
+          conversationHistory: [],
+          recentMessages: legacyHistory.map((h: any) => ({
+            role: (h?.role || '').toLowerCase() === 'model' ? 'assistant' : 'user',
+            content: h?.parts?.[0]?.text || ''
+          }))
+        };
+        console.log('Using legacy conversationHistory for memory context');
+      } catch {}
+    }
+
+    if (!memoryContext) {
+      memoryContext = await buildMemoryContext(userId, conversationId, prompt);
+    }
     
     // Build contextual prompt with memory
     const contextualPrompt = buildContextualPrompt(memoryContext, prompt, mode);
