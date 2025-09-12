@@ -2,6 +2,10 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Users profile documents - each user can read/write their own
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
     // Allow authenticated users to access their own messages
     match /messages/{messageId} {
       allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
@@ -22,20 +26,16 @@ service cloud.firestore {
     match /semanticMemories/{memoryId} {
       allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      allow list: if request.auth != null && request.auth.uid in resource.data.keys() || 
-                      request.query.where('userId', '==', request.auth.uid);
     }
 
     match /episodicMemories/{memoryId} {
       allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      allow list: if request.auth != null && request.query.where('userId', '==', request.auth.uid);
     }
 
     match /shortTermMemories/{memoryId} {
       allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      allow list: if request.auth != null && request.query.where('userId', '==', request.auth.uid);
     }
 
     // Allow authenticated users to access subscription data
