@@ -383,6 +383,8 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
         const formData = new FormData();
         if (userMessage) formData.append('prompt', userMessage);
         formData.append('mode', activeTab);
+        // Ensure conversation continuity across turns
+        formData.append('conversationId', currentConvId);
         images.forEach((image, index) => {
           formData.append(`image_${index}`, image);
         });
@@ -428,6 +430,7 @@ export default function ChatInterface({ conversationId }: ChatInterfaceProps) {
         requestBody = JSON.stringify({
           prompt: userMessage || '',
           mode: activeTab,
+          conversationId: currentConvId,
           memoryContext: memoryContext,
           // Keep legacy support for backward compatibility
           conversationHistory: memoryContext?.shortTermMemory?.messages?.map(msg => ({

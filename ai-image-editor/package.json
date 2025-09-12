@@ -8,6 +8,8 @@
     "build:export": "STATIC_EXPORT=true next build",
     "start": "next start",
     "lint": "eslint",
+    "gha:wait": "node scripts/gha/wait-actions.js",
+    "gha:merge": "node scripts/gha/merge-to-master.js",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",

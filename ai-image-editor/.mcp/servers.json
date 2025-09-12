@@ -1,0 +1,12 @@
+{
+  "github": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-github"],
+    "env": {
+      "GITHUB_TOKEN": "${GITHUB_TOKEN}",
+      "GITHUB_REPO": "${GITHUB_OWNER}/${GITHUB_REPO}",
+      "GITHUB_DEFAULT_BRANCH": "master"
+    }
+  }
+}
+
